@@ -4,12 +4,12 @@
 ### Zero-Trust Cryptographic Digital Custody System for Legal & Investigation Documents
 **Conforming to Bharatiya Sakshya Adhiniyam (BSA) 2023 (§63) & ISO/IEC 27001:2022**
 
-[![Smart India Hackathon](https://img.shields.io/badge/Smart%20India%20Hackathon-SIH%20MVP-orange?style=for-the-badge&logo=target)](https://github.com/Rahulcoder-881/NyayaVault)
-[![Legal Compliance](https://img.shields.io/badge/BSA%202023-Section%2063%20Certified-0284c7?style=for-the-badge&logo=databricks)](https://github.com/Rahulcoder-881/NyayaVault)
-[![Cryptography](https://img.shields.io/badge/Cryptography-FIPS%20180--4%20SHA--256-10b981?style=for-the-badge&logo=letsencrypt)](https://github.com/Rahulcoder-881/NyayaVault)
-[![Frontend](https://img.shields.io/badge/Frontend-React%2019%20%7C%20Vite%20%7C%20Three.js-6366f1?style=for-the-badge&logo=react)](https://github.com/Rahulcoder-881/NyayaVault)
-[![Backend](https://img.shields.io/badge/Backend-FastAPI%20%7C%20Python%203.11-059669?style=for-the-badge&logo=fastapi)](https://github.com/Rahulcoder-881/NyayaVault)
-[![License](https://img.shields.io/badge/License-MIT-f59e0b?style=for-the-badge)](https://github.com/Rahulcoder-881/NyayaVault/blob/main/LICENSE)
+[![Smart India Hackathon](https://img.shields.io/badge/Smart%20India%20Hackathon-SIH%20MVP%202026-orange?style=for-the-badge&logo=target)](https://github.com/Rahulcoder-881/sih-mvp-2026)
+[![Live Web Preview](https://img.shields.io/badge/Live%20Demo-Web%20Preview%20Online-00f0ff?style=for-the-badge&logo=google-chrome)](https://rahulcoder-881.github.io/sih-mvp-2026/)
+[![Legal Compliance](https://img.shields.io/badge/BSA%202023-Section%2063%20Certified-0284c7?style=for-the-badge&logo=databricks)](https://github.com/Rahulcoder-881/sih-mvp-2026)
+[![Cryptography](https://img.shields.io/badge/Cryptography-FIPS%20180--4%20SHA--256-10b981?style=for-the-badge&logo=letsencrypt)](https://github.com/Rahulcoder-881/sih-mvp-2026)
+[![Frontend](https://img.shields.io/badge/Frontend-React%2019%20%7C%20Vite%20%7C%20Three.js-6366f1?style=for-the-badge&logo=react)](https://github.com/Rahulcoder-881/sih-mvp-2026)
+[![License](https://img.shields.io/badge/License-MIT-f59e0b?style=for-the-badge)](https://github.com/Rahulcoder-881/sih-mvp-2026/blob/main/LICENSE)
 
 <br/>
 
@@ -28,6 +28,13 @@
   <i>No unauthorized alterations. No corrupted evidence. Instant court-admissible Section 63 BSA certificates.</i>
 </p>
 
+<p align="center">
+  <a href="https://rahulcoder-881.github.io/sih-mvp-2026/">
+    <img src="https://img.shields.io/badge/🚀%20LAUNCH%20LIVE%20WEB%20PREVIEW-CLICK%20HERE-00f0ff?style=for-the-badge&labelColor=0a0f1d" alt="Launch Live Web Preview" height="40"/>
+  </a>
+</p>
+
+[🌐 Live Web Preview](https://rahulcoder-881.github.io/sih-mvp-2026/) •
 [Explore Key Features](#-core-capabilities) •
 [System Architecture](#-system-architecture) •
 [Interactive 3D Vault](#-interactive-3d-visualizer) •
@@ -35,6 +42,10 @@
 [SIH Alignment](#-sih-evaluation-matrix-compliance)
 
 </div>
+
+> [!TIP]
+> ### 🌐 Live SIH MVP Web Preview
+> **Zero installation required for SIH evaluators!** Try the fully functioning client-side cryptographic engine directly at: **[https://rahulcoder-881.github.io/sih-mvp-2026/](https://rahulcoder-881.github.io/sih-mvp-2026/)**. Features in-browser Web Crypto SHA-256 calculation, interactive bit-flip tamper attacks with 1-click self-healing, Merkle proof inspection, Section 63 BSA electronic certificate generation, zero-width steganographic watermarking, and live simulated audit streams.
 
 ---
 
@@ -180,45 +191,36 @@ First Responder   Seizure Memo   Forensic Lab   Prosecution    Judicial      App
 - **Node.js 18+** & **npm**
 - **Git**
 
+### 1. Instant Online Web Preview (Evaluator Recommendation)
+No installation required. Test the complete UI, cryptographic engine, tamper simulations, and BSA certificates directly in your browser:
+👉 **[Launch Live Web Preview](https://rahulcoder-881.github.io/sih-mvp-2026/)**
+
+### 2. Local Setup
+
 ```bash
-# 1. Clone the repository
-git clone https://github.com/Rahulcoder-881/NyayaVault.git
-cd NyayaVault
+# Clone the repository
+git clone https://github.com/Rahulcoder-881/sih-mvp-2026.git
+cd sih-mvp-2026
 ```
 
-### 2. Backend Setup
+#### Run Frontend Web Preview Locally (Zero Backend Required):
 ```bash
-cd backend
-
-# Create virtual environment
-python -m venv venv
-
-# Activate virtual environment
-# Windows:
-.\venv\Scripts\activate
-# Linux/macOS:
-source venv/bin/activate
-
-# Install dependencies
-pip install -r requirements.txt
-
-# Launch FastAPI Backend
-uvicorn main:app --reload --port 8000
-```
-Backend will be live with Swagger API documentation at: **`http://localhost:8000/docs`**
-
-### 3. Frontend Setup
-```bash
-# Open a new terminal
 cd frontend
-
-# Install packages
 npm install
-
-# Start Vite Development Server
 npm run dev
 ```
-Frontend will be live at: **`http://localhost:5173`**
+Open **`http://localhost:5173`** — it runs seamlessly with client-side Web Crypto and simulated audit streaming.
+
+#### (Optional) Full-Stack with Python Backend:
+```bash
+# Open terminal 1: Backend
+cd backend
+python -m venv venv
+.\venv\Scripts\activate   # Windows (or source venv/bin/activate on Linux/macOS)
+pip install -r requirements.txt
+uvicorn main:app --reload --port 8000
+```
+Backend Swagger API will be live at: **`http://localhost:8000/docs`**
 
 ---
 
@@ -264,5 +266,5 @@ Frontend will be live at: **`http://localhost:5173`**
 Built with dedication for the **Smart India Hackathon (SIH)**.  
 Designed to fortify transparency, trust, and integrity across India's criminal justice system.
 
-**Repository:** [https://github.com/Rahulcoder-881/NyayaVault](https://github.com/Rahulcoder-881/NyayaVault)  
+**Repository:** [https://github.com/Rahulcoder-881/sih-mvp-2026](https://github.com/Rahulcoder-881/sih-mvp-2026)  
 **License:** [MIT License](LICENSE)

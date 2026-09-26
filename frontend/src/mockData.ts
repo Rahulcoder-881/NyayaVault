@@ -4,8 +4,7 @@ import type {
   AuditBlock, 
   ContradictionItem, 
   TimelineEvent, 
-  BSACertificateData,
-  UserRole
+  BSACertificateData
 } from './types';
 
 // Simple fast SHA-256 for browser environment
@@ -265,216 +264,227 @@ export const INITIAL_AUDIT_BLOCKS: AuditBlock[] = [
   }
 ];
 
-export const RAW_DOCUMENTS_SEED = [
+export const INITIAL_DOCUMENTS: DocumentItem[] = [
   {
-    id: "DOC-STG1-001",
-    title: "First Information Report (FIR No. 402/2026)",
-    stage: 1 as const,
-    stage_name: "FIR Ingestion & Biometric Capture",
-    category: "FIR",
-    uploaded_by: "Insp. R.K. Varma",
-    uploader_role: "IO_POLICE" as UserRole,
-    badge_id: "DL-POL-8832",
-    timestamp_utc: "2026-03-12T01:15:22Z",
-    gps_coordinates: "28.5823° N, 77.2285° E (Lodhi Colony PS)",
-    classification: "PUBLIC_COURT_RECORD" as const,
-    exhibit_number: "Ex. P-1",
-    content: `FIRST INFORMATION REPORT (Under Section 173 BNSS 2023)
-State: Delhi | District: South-East | Police Station: Special Cell, Lodhi Colony
-FIR No: 402/2026 | Date & Hour of Occurrence: 11-03-2026 at 23:30 Hours
-Sections of Law: Sections 103(1), 61(2) Bharatiya Nyaya Sanhita (BNS) 2023, Sections 25/27 Arms Act
-
-COMPLAINANT / INFORMANT:
-Name: Sh. Harish Chander | Contact: +91-98110-XXXXX | Resid: H-44, Barakhamba Road, New Delhi
-
-DETAILS OF INCIDENT:
-At approx 23:30 hrs, gunfire was reported outside a warehouse near Okhla Phase III. Informant witnessed
-two armed assailants ambushing victim Devendra Shrestha. Victim sustained fatal projectile trauma to the chest.
-Assailants fled in an unidentified motor vehicle. Digital biometric thumbprint of Informant verified via Aadhaar OTP.
-Signed & Recorded by Insp. R.K. Varma (Badge: DL-POL-8832).`
+    "id": "DOC-STG1-001",
+    "title": "First Information Report (FIR No. 402/2026)",
+    "stage": 1,
+    "stage_name": "FIR Ingestion & Biometric Capture",
+    "category": "FIR",
+    "uploaded_by": "Insp. R.K. Varma",
+    "uploader_role": "IO_POLICE",
+    "badge_id": "DL-POL-8832",
+    "timestamp_utc": "2026-03-12T01:15:22Z",
+    "gps_coordinates": "28.5823° N, 77.2285° E (Lodhi Colony PS)",
+    "classification": "PUBLIC_COURT_RECORD",
+    "exhibit_number": "Ex. P-1",
+    "content": "FIRST INFORMATION REPORT (Under Section 173 BNSS 2023)\nState: Delhi | District: South-East | Police Station: Special Cell, Lodhi Colony\nFIR No: 402/2026 | Date & Hour of Occurrence: 11-03-2026 at 23:30 Hours\nSections of Law: Sections 103(1), 61(2) Bharatiya Nyaya Sanhita (BNS) 2023, Sections 25/27 Arms Act\n\nCOMPLAINANT / INFORMANT:\nName: Sh. Harish Chander | Contact: +91-98110-XXXXX | Resid: H-44, Barakhamba Road, New Delhi\n\nDETAILS OF INCIDENT:\nAt approx 23:30 hrs, gunfire was reported outside a warehouse near Okhla Phase III. Informant witnessed\ntwo armed assailants ambushing victim Devendra Shrestha. Victim sustained fatal projectile trauma to the chest.\nAssailants fled in an unidentified motor vehicle. Digital biometric thumbprint of Informant verified via Aadhaar OTP.\nSigned & Recorded by Insp. R.K. Varma (Badge: DL-POL-8832).",
+    "case_id": "CASE-2026-DEL-402",
+    "sha256_hash": "32cefc3d37e77d6c02ac33e8a0bb8a193078e591065330c35b1c3f80ea7112df",
+    "original_sha256": "32cefc3d37e77d6c02ac33e8a0bb8a193078e591065330c35b1c3f80ea7112df",
+    "merkle_leaf_hash": "3810e9609ea55cb93fc13e05b11eb90a7933de7121c4d327864efa1c3fa23458",
+    "status": "VERIFIED",
+    "file_size_bytes": 843,
+    "redacted_content": "FIRST INFORMATION REPORT (Under Section 173 BNSS 2023)\nState: Delhi | District: South-East | Police Station: Special Cell, Lodhi Colony\nFIR No: 402/2026 | Date & Hour of Occurrence: 11-03-2026 at 23:30 Hours\nSections of Law: Sections 103(1), 61(2) Bharatiya Nyaya Sanhita (BNS) 2023, Sections 25/27 Arms Act\n\nCOMPLAINANT / INFORMANT:\nName: Sh. Harish Chander | Contact: +91-98110-XXXXX | Resid: H-44, Barakhamba Road, New Delhi\n\nDETAILS OF INCIDENT:\nAt approx 23:30 hrs, gunfire was reported outside a warehouse near Okhla Phase III. Informant witnessed\ntwo armed assailants ambushing victim Devendra Shrestha. Victim sustained fatal projectile trauma to the chest.\nAssailants fled in an unidentified motor vehicle. Digital biometric thumbprint of Informant verified via Aadhaar OTP.\nSigned & Recorded by Insp. R.K. Varma (Badge: DL-POL-8832).",
+    "tamper_flag": false,
+    "kms_key_arn": "arn:aws:kms:ap-south-1:992019481921:key/nyayavault-hsm-bsa2023",
+    "envelope_iv": "a9f8b7c6d5e4f3a2b1c0"
   },
   {
-    id: "DOC-STG1-002",
-    title: "General Diary (GD) Entry No. 14A - Dispatch Log",
-    stage: 1 as const,
-    stage_name: "FIR Ingestion & Biometric Capture",
-    category: "GD Entry",
-    uploaded_by: "Duty Officer ASI Satish Rawat",
-    uploader_role: "IO_POLICE" as UserRole,
-    badge_id: "DL-POL-9104",
-    timestamp_utc: "2026-03-12T01:45:10Z",
-    gps_coordinates: "28.5823° N, 77.2285° E (Duty Desk Terminal #2)",
-    classification: "RESTRICTED" as const,
-    exhibit_number: "Ex. P-2",
-    content: `DELHI POLICE DAILY GENERAL DIARY REGISTER
-Entry No: 14A | Date: 12-03-2026 | Time: 01:45 Hours
-Duty Officer: ASI Satish Rawat (Badge DL-POL-9104)
-
-PCR call received at 23:42 hrs from civilian helpline 112 reporting firing at Okhla Phase III.
-PCR Van Commander Eagle-4 dispatched immediately. Mobile Crime Team and Forensic Unit requisitioned.
-Case registered under FIR 402/2026 and investigation assigned to Insp. R.K. Varma.`
+    "id": "DOC-STG1-002",
+    "title": "General Diary (GD) Entry No. 14A - Dispatch Log",
+    "stage": 1,
+    "stage_name": "FIR Ingestion & Biometric Capture",
+    "category": "GD Entry",
+    "uploaded_by": "Duty Officer ASI Satish Rawat",
+    "uploader_role": "IO_POLICE",
+    "badge_id": "DL-POL-9104",
+    "timestamp_utc": "2026-03-12T01:45:10Z",
+    "gps_coordinates": "28.5823° N, 77.2285° E (Duty Desk Terminal #2)",
+    "classification": "RESTRICTED",
+    "exhibit_number": "Ex. P-2",
+    "content": "DELHI POLICE DAILY GENERAL DIARY REGISTER\nEntry No: 14A | Date: 12-03-2026 | Time: 01:45 Hours\nDuty Officer: ASI Satish Rawat (Badge DL-POL-9104)\n\nPCR call received at 23:42 hrs from civilian helpline 112 reporting firing at Okhla Phase III.\nPCR Van Commander Eagle-4 dispatched immediately. Mobile Crime Team and Forensic Unit requisitioned.\nCase registered under FIR 402/2026 and investigation assigned to Insp. R.K. Varma.",
+    "case_id": "CASE-2026-DEL-402",
+    "sha256_hash": "b8ade07287cf0f6d987999f884ed9ec2e9f882d11db07a5230cf4a1cb4299458",
+    "original_sha256": "b8ade07287cf0f6d987999f884ed9ec2e9f882d11db07a5230cf4a1cb4299458",
+    "merkle_leaf_hash": "8435157aa300d0e21ea0dce69d3b407a7daaa9c3fe1fc5fb084416a32e910d2c",
+    "status": "VERIFIED",
+    "file_size_bytes": 425,
+    "redacted_content": "DELHI POLICE DAILY GENERAL DIARY REGISTER\nEntry No: 14A | Date: 12-03-2026 | Time: 01:45 Hours\nDuty Officer: ASI Satish Rawat (Badge DL-POL-9104)\n\nPCR call received at 23:42 hrs from civilian helpline 112 reporting firing at Okhla Phase III.\nPCR Van Commander Eagle-4 dispatched immediately. Mobile Crime Team and Forensic Unit requisitioned.\nCase registered under FIR 402/2026 and investigation assigned to Insp. R.K. Varma.",
+    "tamper_flag": false,
+    "kms_key_arn": "arn:aws:kms:ap-south-1:992019481921:key/nyayavault-hsm-bsa2023",
+    "envelope_iv": "a9f8b7c6d5e4f3a2b1c0"
   },
   {
-    id: "DOC-STG2-003",
-    title: "Panchnama & Seizure Memo - Glock 19 Pistol Recovery",
-    stage: 2 as const,
-    stage_name: "Field Investigation & Seizures",
-    category: "Seizure Memo",
-    uploaded_by: "Insp. R.K. Varma",
-    uploader_role: "IO_POLICE" as UserRole,
-    badge_id: "DL-POL-8832",
-    timestamp_utc: "2026-03-13T09:30:00Z",
-    gps_coordinates: "28.6139° N, 77.0342° E (Najafgarh Drain Canal Bank)",
-    classification: "CONFIDENTIAL" as const,
-    exhibit_number: "Ex. P-3",
-    content: `MEMORANDUM OF SEIZURE (PANCHNAMA) UNDER SEC 105 BNSS 2023
-Place of Recovery: Marshy bank of Najafgarh Drain Canal, 200m north of Dwarka Expressway bridge
-Date & Time: 13th March 2026 at 09:15 Hours
-
-PANCH WITNESSES:
-1. Sh. Manoj Gupta, s/o K.L. Gupta, r/o Dwarka Sector 11, Delhi (ID: EPIC-VBH908129)
-2. Sh. Tariq Ahmed, s/o F. Ahmed, r/o Palam Village, Delhi (ID: EPIC-DLN332194)
-
-DESCRIPTION OF RECOVERED PROPERTY:
-Pursuant to the disclosure statement of accused Vikram Malhotra under Section 23 BSA 2023, the police party
-searched the thick reeds along the canal. Discovered wrapped in oilcloth: One black Austrian-manufactured
-9mm semi-automatic Glock 19 pistol bearing engraved Serial Number W-9041, loaded with one magazine containing
-4 live 9x19mm Parabellum cartridges stamped 'KF 9mm 2024'. Weapon sealed in tamper-evident forensic pouch F-881.`
+    "id": "DOC-STG2-003",
+    "title": "Panchnama & Seizure Memo - Glock 19 Pistol Recovery",
+    "stage": 2,
+    "stage_name": "Field Investigation & Seizures",
+    "category": "Seizure Memo",
+    "uploaded_by": "Insp. R.K. Varma",
+    "uploader_role": "IO_POLICE",
+    "badge_id": "DL-POL-8832",
+    "timestamp_utc": "2026-03-13T09:30:00Z",
+    "gps_coordinates": "28.6139° N, 77.0342° E (Najafgarh Drain Canal Bank)",
+    "classification": "CONFIDENTIAL",
+    "exhibit_number": "Ex. P-3",
+    "content": "MEMORANDUM OF SEIZURE (PANCHNAMA) UNDER SEC 105 BNSS 2023\nPlace of Recovery: Marshy bank of Najafgarh Drain Canal, 200m north of Dwarka Expressway bridge\nDate & Time: 13th March 2026 at 09:15 Hours\n\nPANCH WITNESSES:\n1. Sh. Manoj Gupta, s/o K.L. Gupta, r/o Dwarka Sector 11, Delhi (ID: EPIC-VBH908129)\n2. Sh. Tariq Ahmed, s/o F. Ahmed, r/o Palam Village, Delhi (ID: EPIC-DLN332194)\n\nDESCRIPTION OF RECOVERED PROPERTY:\nPursuant to the disclosure statement of accused Vikram Malhotra under Section 23 BSA 2023, the police party\nsearched the thick reeds along the canal. Discovered wrapped in oilcloth: One black Austrian-manufactured\n9mm semi-automatic Glock 19 pistol bearing engraved Serial Number W-9041, loaded with one magazine containing\n4 live 9x19mm Parabellum cartridges stamped 'KF 9mm 2024'. Weapon sealed in tamper-evident forensic pouch F-881.",
+    "case_id": "CASE-2026-DEL-402",
+    "sha256_hash": "c305447c47a5bcfe7fea62eb6acb1d6a9d4548b06102fe52c413b5e84f91965d",
+    "original_sha256": "c305447c47a5bcfe7fea62eb6acb1d6a9d4548b06102fe52c413b5e84f91965d",
+    "merkle_leaf_hash": "ce25d2640b96e3144e23cd6f2f53188ba40cf0b6dca883599a9d8b272d76d40d",
+    "status": "VERIFIED",
+    "file_size_bytes": 853,
+    "redacted_content": "MEMORANDUM OF SEIZURE (PANCHNAMA) UNDER SEC 105 BNSS 2023\nPlace of Recovery: Marshy bank of Najafgarh Drain Canal, 200m north of Dwarka Expressway bridge\nDate & Time: 13th March 2026 at 09:15 Hours\n\nPANCH WITNESSES:\n1. Sh. Manoj Gupta, s/o K.L. Gupta, r/o Dwarka Sector 11, Delhi (ID: EPIC-VBH908129)\n2. Sh. Tariq Ahmed, s/o F. Ahmed, r/o Palam Village, Delhi (ID: EPIC-DLN332194)\n\nDESCRIPTION OF RECOVERED PROPERTY:\nPursuant to the disclosure statement of accused Vikram Malhotra under Section 23 BSA 2023, the police party\nsearched the thick reeds along the canal. Discovered wrapped in oilcloth: One black Austrian-manufactured\n9mm semi-automatic Glock 19 pistol bearing engraved Serial Number W-9041, loaded with one magazine containing\n4 live 9x19mm Parabellum cartridges stamped 'KF 9mm 2024'. Weapon sealed in tamper-evident forensic pouch F-881.",
+    "tamper_flag": false,
+    "kms_key_arn": "arn:aws:kms:ap-south-1:992019481921:key/nyayavault-hsm-bsa2023",
+    "envelope_iv": "a9f8b7c6d5e4f3a2b1c0"
   },
   {
-    id: "DOC-STG2-004",
-    title: "Witness Statement - Sh. Ramesh Kumar (Sec 180 BNSS)",
-    stage: 2 as const,
-    stage_name: "Field Investigation & Seizures",
-    category: "Witness Statement",
-    uploaded_by: "Insp. R.K. Varma",
-    uploader_role: "IO_POLICE" as UserRole,
-    badge_id: "DL-POL-8832",
-    timestamp_utc: "2026-03-14T14:20:00Z",
-    gps_coordinates: "28.5355° N, 77.2732° E (Okhla Industrial Area)",
-    classification: "CONFIDENTIAL" as const,
-    exhibit_number: "Ex. P-4",
-    content: `STATEMENT OF WITNESS EXAMINED UNDER SECTION 180 BNSS 2023
-Witness: Sh. Ramesh Kumar | Age: 42 yrs | Mobile: +91-98711-23456
-Residential Address: House No. 89, Gali No. 3, Govindpuri, New Delhi - 110019
-
-STATEMENT:
-I run a night tea stall near the container depot at Okhla Phase III. On the night of 11th March 2026 around
-23:25 hrs, I heard loud argument followed by 3 distinct gunshots. I looked towards the godown gate and saw two men
-wearing dark hoodies running away. One of them put a handgun into his leather jacket. They jumped into a RED HATCHBACK
-car that was parked with headlights switched off and sped away towards Kalkaji. I am willing to identify the suspects
-in a Test Identification Parade (TIP). Signed: Ramesh Kumar.`
+    "id": "DOC-STG2-004",
+    "title": "Witness Statement - Sh. Ramesh Kumar (Sec 180 BNSS)",
+    "stage": 2,
+    "stage_name": "Field Investigation & Seizures",
+    "category": "Witness Statement",
+    "uploaded_by": "Insp. R.K. Varma",
+    "uploader_role": "IO_POLICE",
+    "badge_id": "DL-POL-8832",
+    "timestamp_utc": "2026-03-14T14:20:00Z",
+    "gps_coordinates": "28.5355° N, 77.2732° E (Okhla Industrial Area)",
+    "classification": "CONFIDENTIAL",
+    "exhibit_number": "Ex. P-4",
+    "content": "STATEMENT OF WITNESS EXAMINED UNDER SECTION 180 BNSS 2023\nWitness: Sh. Ramesh Kumar | Age: 42 yrs | Mobile: +91-98711-23456\nResidential Address: House No. 89, Gali No. 3, Govindpuri, New Delhi - 110019\n\nSTATEMENT:\nI run a night tea stall near the container depot at Okhla Phase III. On the night of 11th March 2026 around\n23:25 hrs, I heard loud argument followed by 3 distinct gunshots. I looked towards the godown gate and saw two men\nwearing dark hoodies running away. One of them put a handgun into his leather jacket. They jumped into a RED HATCHBACK\ncar that was parked with headlights switched off and sped away towards Kalkaji. I am willing to identify the suspects\nin a Test Identification Parade (TIP). Signed: Ramesh Kumar.",
+    "case_id": "CASE-2026-DEL-402",
+    "sha256_hash": "510d5d005c0f5c20b857d684f506a4db2bc235ea03addabba11f237d5592a002",
+    "original_sha256": "510d5d005c0f5c20b857d684f506a4db2bc235ea03addabba11f237d5592a002",
+    "merkle_leaf_hash": "2a5e2162e644c3414a5fedefe25e6674571a1e49df1a0d8d3ac2e076d070b048",
+    "status": "VERIFIED",
+    "file_size_bytes": 734,
+    "redacted_content": "STATEMENT OF WITNESS EXAMINED UNDER SECTION 180 BNSS 2023\nWitness: ████████ [WITNESS-W1] | Age: 42 yrs | Mobile: ████████████ [REDACTED CELL]\nResidential Address: ████████████████████ [REDACTED ADDRESS]\n\nSTATEMENT:\nI run a night tea stall near the container depot at Okhla Phase III. On the night of 11th March 2026 around\n23:25 hrs, I heard loud argument followed by 3 distinct gunshots. I looked towards the godown gate and saw two men\nwearing dark hoodies running away. One of them put a handgun into his leather jacket. They jumped into a RED HATCHBACK\ncar that was parked with headlights switched off and sped away towards Kalkaji. I am willing to identify the suspects\nin a Test Identification Parade (TIP). Signed: Ramesh Kumar.",
+    "tamper_flag": false,
+    "kms_key_arn": "arn:aws:kms:ap-south-1:992019481921:key/nyayavault-hsm-bsa2023",
+    "envelope_iv": "a9f8b7c6d5e4f3a2b1c0"
   },
   {
-    id: "DOC-STG3-005",
-    title: "CFSL Forensic Ballistics Examination Certificate",
-    stage: 3 as const,
-    stage_name: "Forensic Laboratory Analysis",
-    category: "Forensic Report",
-    uploaded_by: "Dr. Ananya Sen, Senior Scientific Officer",
-    uploader_role: "FORENSIC_LAB" as UserRole,
-    badge_id: "CFSL-DEL-BALL-04",
-    timestamp_utc: "2026-03-17T11:00:00Z",
-    gps_coordinates: "28.5830° N, 77.2340° E (CFSL, CBI Complex)",
-    classification: "FORENSIC_INTERNAL" as const,
-    exhibit_number: "Ex. P-5",
-    content: `CENTRAL FORENSIC SCIENCE LABORATORY (CFSL), CBI COMPLEX, NEW DELHI
-REPORT NO: CFSL/2026/BALL-8891 | CASE REFERENCE: FIR 402/2026 PS SPECIAL CELL
-EXPERT: Dr. Ananya Sen, SSO (Ballistics Division)
-
-EXHIBITS RECEIVED UNDER SEAL F-881:
-- Exhibit W/1: Glock 19 9mm Pistol (Serial # W-9041)
-- Exhibit C/1 to C/3: Three empty cartridge cases recovered from crime scene
-- Exhibit B/1: Projectile retrieved during victim Devendra Shrestha post-mortem autopsy
-
-BALLISTIC COMPARATIVE ANALYSIS:
-1. Test firings were conducted in the water recovery tank using standard test ammunition.
-2. Under the Leica DMC comparison microscope at 40x magnification, firing pin impressions, breech face marks,
-   and chamber striations on crime scene cartridge cases C/1, C/2, and C/3 matched identically with test cartridge cases.
-3. Land and groove rifling characteristics (6 grooves, right-hand twist) on post-mortem bullet B/1 correspond
-   conclusively to the polygonal barrel of Exhibit W/1.
-
-OPINION:
-The fatal bullet B/1 and crime scene cartridge cases C/1-C/3 were discharged from the recovered Glock 19 (W-9041)
-to the exclusion of all other firearms.`
+    "id": "DOC-STG3-005",
+    "title": "CFSL Forensic Ballistics Examination Certificate",
+    "stage": 3,
+    "stage_name": "Forensic Laboratory Analysis",
+    "category": "Forensic Report",
+    "uploaded_by": "Dr. Ananya Sen, Senior Scientific Officer",
+    "uploader_role": "FORENSIC_LAB",
+    "badge_id": "CFSL-DEL-BALL-04",
+    "timestamp_utc": "2026-03-17T11:00:00Z",
+    "gps_coordinates": "28.5830° N, 77.2340° E (CFSL, CBI Complex)",
+    "classification": "FORENSIC_INTERNAL",
+    "exhibit_number": "Ex. P-5",
+    "content": "CENTRAL FORENSIC SCIENCE LABORATORY (CFSL), CBI COMPLEX, NEW DELHI\nREPORT NO: CFSL/2026/BALL-8891 | CASE REFERENCE: FIR 402/2026 PS SPECIAL CELL\nEXPERT: Dr. Ananya Sen, SSO (Ballistics Division)\n\nEXHIBITS RECEIVED UNDER SEAL F-881:\n- Exhibit W/1: Glock 19 9mm Pistol (Serial # W-9041)\n- Exhibit C/1 to C/3: Three empty cartridge cases recovered from crime scene\n- Exhibit B/1: Projectile retrieved during victim Devendra Shrestha post-mortem autopsy\n\nBALLISTIC COMPARATIVE ANALYSIS:\n1. Test firings were conducted in the water recovery tank using standard test ammunition.\n2. Under the Leica DMC comparison microscope at 40x magnification, firing pin impressions, breech face marks,\n   and chamber striations on crime scene cartridge cases C/1, C/2, and C/3 matched identically with test cartridge cases.\n3. Land and groove rifling characteristics (6 grooves, right-hand twist) on post-mortem bullet B/1 correspond\n   conclusively to the polygonal barrel of Exhibit W/1.\n\nOPINION:\nThe fatal bullet B/1 and crime scene cartridge cases C/1-C/3 were discharged from the recovered Glock 19 (W-9041)\nto the exclusion of all other firearms.",
+    "case_id": "CASE-2026-DEL-402",
+    "sha256_hash": "02612b31850ce8d930bfda34d21d1912a57aa3b95c23d83baa5741a5c08405bb",
+    "original_sha256": "02612b31850ce8d930bfda34d21d1912a57aa3b95c23d83baa5741a5c08405bb",
+    "merkle_leaf_hash": "fbb3e6960d21cb3e6379040dd2764d8c2b7173b73ffaea86fbe53c1ee22e4bc3",
+    "status": "VERIFIED",
+    "file_size_bytes": 1134,
+    "redacted_content": "CENTRAL FORENSIC SCIENCE LABORATORY (CFSL), CBI COMPLEX, NEW DELHI\nREPORT NO: CFSL/2026/BALL-8891 | CASE REFERENCE: FIR 402/2026 PS SPECIAL CELL\nEXPERT: Dr. Ananya Sen, SSO (Ballistics Division)\n\nEXHIBITS RECEIVED UNDER SEAL F-881:\n- Exhibit W/1: Glock 19 9mm Pistol (Serial # W-9041)\n- Exhibit C/1 to C/3: Three empty cartridge cases recovered from crime scene\n- Exhibit B/1: Projectile retrieved during victim Devendra Shrestha post-mortem autopsy\n\nBALLISTIC COMPARATIVE ANALYSIS:\n1. Test firings were conducted in the water recovery tank using standard test ammunition.\n2. Under the Leica DMC comparison microscope at 40x magnification, firing pin impressions, breech face marks,\n   and chamber striations on crime scene cartridge cases C/1, C/2, and C/3 matched identically with test cartridge cases.\n3. Land and groove rifling characteristics (6 grooves, right-hand twist) on post-mortem bullet B/1 correspond\n   conclusively to the polygonal barrel of Exhibit W/1.\n\nOPINION:\nThe fatal bullet B/1 and crime scene cartridge cases C/1-C/3 were discharged from the recovered Glock 19 (W-9041)\nto the exclusion of all other firearms.",
+    "tamper_flag": false,
+    "kms_key_arn": "arn:aws:kms:ap-south-1:992019481921:key/nyayavault-hsm-bsa2023",
+    "envelope_iv": "a9f8b7c6d5e4f3a2b1c0"
   },
   {
-    id: "DOC-STG3-006",
-    title: "SFSL DNA Profiling & Fingerprint Latent Report",
-    stage: 3 as const,
-    stage_name: "Forensic Laboratory Analysis",
-    category: "DNA Report",
-    uploaded_by: "Dr. M.K. Sharma, Director",
-    uploader_role: "FORENSIC_LAB" as UserRole,
-    badge_id: "SFSL-ROH-BIO-12",
-    timestamp_utc: "2026-03-18T16:45:00Z",
-    gps_coordinates: "28.7188° N, 77.1202° E (SFSL Rohini)",
-    classification: "FORENSIC_INTERNAL" as const,
-    exhibit_number: "Ex. P-6",
-    content: `STATE FORENSIC SCIENCE LABORATORY, ROHINI, DELHI
-DNA REPORT NO: SFSL/DNA/2026/0412 | POLICE REF: FIR 402/2026
-
-EXHIBITS TESTED: Epithelial cell swabs lifted from trigger and textured grip of Glock 19 (Ex W/1).
-REFERENCE SAMPLE: Blood FTA card of accused Vikram Malhotra.
-
-STR DNA PROFILE ANALYSIS:
-Genotyping carried out across 24 autosomal STR markers using Applied Biosystems 3500xl Genetic Analyzer.
-The complete single-source male DNA profile generated from weapon grip swab matches the reference profile
-of Vikram Malhotra at all 24 loci (amelogenin X/Y concordant).
-Calculated Random Match Probability: 1 in 4.87 x 10^18 individuals in the Indian population.`
+    "id": "DOC-STG3-006",
+    "title": "SFSL DNA Profiling & Fingerprint Latent Report",
+    "stage": 3,
+    "stage_name": "Forensic Laboratory Analysis",
+    "category": "DNA Report",
+    "uploaded_by": "Dr. M.K. Sharma, Director",
+    "uploader_role": "FORENSIC_LAB",
+    "badge_id": "SFSL-ROH-BIO-12",
+    "timestamp_utc": "2026-03-18T16:45:00Z",
+    "gps_coordinates": "28.7188° N, 77.1202° E (SFSL Rohini)",
+    "classification": "FORENSIC_INTERNAL",
+    "exhibit_number": "Ex. P-6",
+    "content": "STATE FORENSIC SCIENCE LABORATORY, ROHINI, DELHI\nDNA REPORT NO: SFSL/DNA/2026/0412 | POLICE REF: FIR 402/2026\n\nEXHIBITS TESTED: Epithelial cell swabs lifted from trigger and textured grip of Glock 19 (Ex W/1).\nREFERENCE SAMPLE: Blood FTA card of accused Vikram Malhotra.\n\nSTR DNA PROFILE ANALYSIS:\nGenotyping carried out across 24 autosomal STR markers using Applied Biosystems 3500xl Genetic Analyzer.\nThe complete single-source male DNA profile generated from weapon grip swab matches the reference profile\nof Vikram Malhotra at all 24 loci (amelogenin X/Y concordant).\nCalculated Random Match Probability: 1 in 4.87 x 10^18 individuals in the Indian population.",
+    "case_id": "CASE-2026-DEL-402",
+    "sha256_hash": "df525d7ce1c4e7b1842be37c35641f17d4f6695fd63e5cf4c3d3fb556a7e7b11",
+    "original_sha256": "df525d7ce1c4e7b1842be37c35641f17d4f6695fd63e5cf4c3d3fb556a7e7b11",
+    "merkle_leaf_hash": "77f3e1ab02d3e9d0ebc3f125460322364d15743fae64751ea8e2dffd14519c2d",
+    "status": "VERIFIED",
+    "file_size_bytes": 664,
+    "redacted_content": "STATE FORENSIC SCIENCE LABORATORY, ROHINI, DELHI\nDNA REPORT NO: SFSL/DNA/2026/0412 | POLICE REF: FIR 402/2026\n\nEXHIBITS TESTED: Epithelial cell swabs lifted from trigger and textured grip of Glock 19 (Ex W/1).\nREFERENCE SAMPLE: Blood FTA card of accused Vikram Malhotra.\n\nSTR DNA PROFILE ANALYSIS:\nGenotyping carried out across 24 autosomal STR markers using Applied Biosystems 3500xl Genetic Analyzer.\nThe complete single-source male DNA profile generated from weapon grip swab matches the reference profile\nof Vikram Malhotra at all 24 loci (amelogenin X/Y concordant).\nCalculated Random Match Probability: 1 in 4.87 x 10^18 individuals in the Indian population.",
+    "tamper_flag": false,
+    "kms_key_arn": "arn:aws:kms:ap-south-1:992019481921:key/nyayavault-hsm-bsa2023",
+    "envelope_iv": "a9f8b7c6d5e4f3a2b1c0"
   },
   {
-    id: "DOC-STG4-007",
-    title: "Prosecution Scrutiny Note & Witness Protection Order",
-    stage: 4 as const,
-    stage_name: "Prosecutorial Scrutiny & Redaction",
-    category: "Charge Sheet",
-    uploaded_by: "Adv. Alok Trivedi, Special Public Prosecutor",
-    uploader_role: "PROSECUTOR" as UserRole,
-    badge_id: "DLS-PROS-0941",
-    timestamp_utc: "2026-03-20T10:15:00Z",
-    gps_coordinates: "28.6219° N, 77.2289° E (Tis Hazari Courts)",
-    classification: "CONFIDENTIAL" as const,
-    exhibit_number: "Ex. P-7",
-    content: `OFFICE OF THE SPECIAL PUBLIC PROSECUTOR, NCT OF DELHI
-SCRUTINY MEMORANDUM // FIR 402/2026 PS SPECIAL CELL
-
-To: Investigating Officer Insp. R.K. Varma
-1. I have vetted the investigation file and evidence bundle. The chain of custody from seizure to CFSL is unblemished.
-2. WITNESS PROTECTION APPLICATION UNDER WITNESS PROTECTION SCHEME 2018:
-   Witness Sh. Ramesh Kumar is vulnerable to syndicate intimidation. You are instructed to apply automated cryptographic
-   redaction masking his phone number, house address, and familial relations before defense inspection under Sec 230 BNSS.
-3. NOTE ON VEHICLE DISCREPANCY: CCTV camera #4 near Modi Mill flyover caught a SILVER SEDAN (DL-3C-9921) at 23:38 hrs,
-   which contradicts witness Ramesh Kumar's mention of a red hatchback. Procure FASTag toll records of DL-3C-9921.`
+    "id": "DOC-STG4-007",
+    "title": "Prosecution Scrutiny Note & Witness Protection Order",
+    "stage": 4,
+    "stage_name": "Prosecutorial Scrutiny & Redaction",
+    "category": "Charge Sheet",
+    "uploaded_by": "Adv. Alok Trivedi, Special Public Prosecutor",
+    "uploader_role": "PROSECUTOR",
+    "badge_id": "DLS-PROS-0941",
+    "timestamp_utc": "2026-03-20T10:15:00Z",
+    "gps_coordinates": "28.6219° N, 77.2289° E (Tis Hazari Courts)",
+    "classification": "CONFIDENTIAL",
+    "exhibit_number": "Ex. P-7",
+    "content": "OFFICE OF THE SPECIAL PUBLIC PROSECUTOR, NCT OF DELHI\nSCRUTINY MEMORANDUM // FIR 402/2026 PS SPECIAL CELL\n\nTo: Investigating Officer Insp. R.K. Varma\n1. I have vetted the investigation file and evidence bundle. The chain of custody from seizure to CFSL is unblemished.\n2. WITNESS PROTECTION APPLICATION UNDER WITNESS PROTECTION SCHEME 2018:\n   Witness Sh. Ramesh Kumar is vulnerable to syndicate intimidation. You are instructed to apply automated cryptographic\n   redaction masking his phone number, house address, and familial relations before defense inspection under Sec 230 BNSS.\n3. NOTE ON VEHICLE DISCREPANCY: CCTV camera #4 near Modi Mill flyover caught a SILVER SEDAN (DL-3C-9921) at 23:38 hrs,\n   which contradicts witness Ramesh Kumar's mention of a red hatchback. Procure FASTag toll records of DL-3C-9921.",
+    "case_id": "CASE-2026-DEL-402",
+    "sha256_hash": "ec433c08c42922bcfe4872cb2966d3046b2ac41a7f61d33dff7f1cffe4e52868",
+    "original_sha256": "ec433c08c42922bcfe4872cb2966d3046b2ac41a7f61d33dff7f1cffe4e52868",
+    "merkle_leaf_hash": "5eb0cfc25d0ce18c7bbf93400d435844bc3193ef570e1f073de48746f77eb0d6",
+    "status": "VERIFIED",
+    "file_size_bytes": 818,
+    "redacted_content": "OFFICE OF THE SPECIAL PUBLIC PROSECUTOR, NCT OF DELHI\nSCRUTINY MEMORANDUM // FIR 402/2026 PS SPECIAL CELL\n\nTo: Investigating Officer Insp. R.K. Varma\n1. I have vetted the investigation file and evidence bundle. The chain of custody from seizure to CFSL is unblemished.\n2. WITNESS PROTECTION APPLICATION UNDER WITNESS PROTECTION SCHEME 2018:\n   Witness ████████ [WITNESS-W1] is vulnerable to syndicate intimidation. You are instructed to apply automated cryptographic\n   redaction masking his phone number, house address, and familial relations before defense inspection under Sec 230 BNSS.\n3. NOTE ON VEHICLE DISCREPANCY: CCTV camera #4 near Modi Mill flyover caught a SILVER SEDAN (DL-3C-9921) at 23:38 hrs,\n   which contradicts witness Ramesh Kumar's mention of a red hatchback. Procure FASTag toll records of DL-3C-9921.",
+    "tamper_flag": false,
+    "kms_key_arn": "arn:aws:kms:ap-south-1:992019481921:key/nyayavault-hsm-bsa2023",
+    "envelope_iv": "a9f8b7c6d5e4f3a2b1c0"
   },
   {
-    id: "DOC-STG4-008",
-    title: "Final Police Report / Charge Sheet (Section 193 BNSS)",
-    stage: 4 as const,
-    stage_name: "Prosecutorial Scrutiny & Redaction",
-    category: "Charge Sheet",
-    uploaded_by: "Insp. R.K. Varma & Adv. Alok Trivedi",
-    uploader_role: "PROSECUTOR" as UserRole,
-    badge_id: "DLS-PROS-0941",
-    timestamp_utc: "2026-03-22T17:00:00Z",
-    gps_coordinates: "28.6219° N, 77.2289° E (Court Filing Counter)",
-    classification: "PUBLIC_COURT_RECORD" as const,
-    exhibit_number: "Ex. P-8",
-    content: `FINAL POLICE REPORT / CHARGE SHEET (Under Section 193 Bharatiya Nagarik Suraksha Sanhita 2023)
-In the Court of Hon'ble Chief Judicial Magistrate, Patiala House Courts, New Delhi
-Case: State vs. Vikram Malhotra & Ors. | FIR: 402/2026 Special Cell
-
-ACCUSED PERSONS SENT UP FOR TRIAL:
-1. Vikram Malhotra, s/o Late O.P. Malhotra, r/o Greater Kailash II, New Delhi (In Judicial Custody)
-2. Ajay Tyagi @ Boxer (Absconding - Sec 84 BNSS proclamation initiated)
-
-CHARGES FRAMED:
-- Sec 103(1) BNS (Murder)
-- Sec 61(2) BNS (Criminal Conspiracy)
-- Sec 25/27 Arms Act (Unlawful acquisition and discharge of prohibited caliber firearm)
-Relied Upon Evidence: Exhibits P-1 through P-8, CFSL Ballistic Match W-9041, SFSL DNA match 99.9998%.`
+    "id": "DOC-STG4-008",
+    "title": "Final Police Report / Charge Sheet (Section 193 BNSS)",
+    "stage": 4,
+    "stage_name": "Prosecutorial Scrutiny & Redaction",
+    "category": "Charge Sheet",
+    "uploaded_by": "Insp. R.K. Varma & Adv. Alok Trivedi",
+    "uploader_role": "PROSECUTOR",
+    "badge_id": "DLS-PROS-0941",
+    "timestamp_utc": "2026-03-22T17:00:00Z",
+    "gps_coordinates": "28.6219° N, 77.2289° E (Court Filing Counter)",
+    "classification": "PUBLIC_COURT_RECORD",
+    "exhibit_number": "Ex. P-8",
+    "content": "FINAL POLICE REPORT / CHARGE SHEET (Under Section 193 Bharatiya Nagarik Suraksha Sanhita 2023)\nIn the Court of Hon'ble Chief Judicial Magistrate, Patiala House Courts, New Delhi\nCase: State vs. Vikram Malhotra & Ors. | FIR: 402/2026 Special Cell\n\nACCUSED PERSONS SENT UP FOR TRIAL:\n1. Vikram Malhotra, s/o Late O.P. Malhotra, r/o Greater Kailash II, New Delhi (In Judicial Custody)\n2. Ajay Tyagi @ Boxer (Absconding - Sec 84 BNSS proclamation initiated)\n\nCHARGES FRAMED:\n- Sec 103(1) BNS (Murder)\n- Sec 61(2) BNS (Criminal Conspiracy)\n- Sec 25/27 Arms Act (Unlawful acquisition and discharge of prohibited caliber firearm)\nRelied Upon Evidence: Exhibits P-1 through P-8, CFSL Ballistic Match W-9041, SFSL DNA match 99.9998%.",
+    "case_id": "CASE-2026-DEL-402",
+    "sha256_hash": "4e88d38cdea169a79fe0aad180e46caa0823810744860badd452aef6023a3488",
+    "original_sha256": "4e88d38cdea169a79fe0aad180e46caa0823810744860badd452aef6023a3488",
+    "merkle_leaf_hash": "ff95699a7e0cbbaa94600185507f421429d18728a601d8d8139b49086ea81acd",
+    "status": "VERIFIED",
+    "file_size_bytes": 724,
+    "redacted_content": "FINAL POLICE REPORT / CHARGE SHEET (Under Section 193 Bharatiya Nagarik Suraksha Sanhita 2023)\nIn the Court of Hon'ble Chief Judicial Magistrate, Patiala House Courts, New Delhi\nCase: State vs. Vikram Malhotra & Ors. | FIR: 402/2026 Special Cell\n\nACCUSED PERSONS SENT UP FOR TRIAL:\n1. Vikram Malhotra, s/o Late O.P. Malhotra, r/o Greater Kailash II, New Delhi (In Judicial Custody)\n2. Ajay Tyagi @ Boxer (Absconding - Sec 84 BNSS proclamation initiated)\n\nCHARGES FRAMED:\n- Sec 103(1) BNS (Murder)\n- Sec 61(2) BNS (Criminal Conspiracy)\n- Sec 25/27 Arms Act (Unlawful acquisition and discharge of prohibited caliber firearm)\nRelied Upon Evidence: Exhibits P-1 through P-8, CFSL Ballistic Match W-9041, SFSL DNA match 99.9998%.",
+    "tamper_flag": false,
+    "kms_key_arn": "arn:aws:kms:ap-south-1:992019481921:key/nyayavault-hsm-bsa2023",
+    "envelope_iv": "a9f8b7c6d5e4f3a2b1c0"
   }
 ];
+
+export const INITIAL_CASE: CaseRecord = {
+  case_id: "CASE-2026-DEL-402",
+  fir_number: "402/2026",
+  police_station: "Special Cell, Lodhi Colony",
+  jurisdiction: "Patiala House Courts, New Delhi",
+  acts_sections: "IPC 302, 120B / BNS 103(1), 61(2), Arms Act 25/27",
+  crime_incident_datetime: "2026-03-11 23:30 IST",
+  io_name: "Insp. R.K. Varma",
+  io_badge: "DL-POL-8832",
+  prosecutor_name: "Adv. Alok Trivedi",
+  presiding_magistrate: "Smt. Vandana Jain, ASJ-03",
+  court_name: "Patiala House Courts Complex",
+  current_stage: 5,
+  merkle_root: "6405ddd6472ba80b4ee6c62aa48e0a37237ae222c10aaff2ae645905725d13c8",
+  total_documents: 8,
+  integrity_score: 100.0,
+  quarantine_count: 0
+};
 
 export async function getClientInitialMockState(): Promise<{
   caseRecord: CaseRecord;
@@ -483,55 +493,9 @@ export async function getClientInitialMockState(): Promise<{
   contradictions: ContradictionItem[];
   timeline: TimelineEvent[];
 }> {
-  const documents: DocumentItem[] = [];
-
-  for (const raw of RAW_DOCUMENTS_SEED) {
-    const hash = await computeBrowserSha256(raw.content);
-    const leafHash = await computeBrowserSha256(`${raw.id}:${hash}:${raw.timestamp_utc}`);
-    
-    // Auto-generate redacted version
-    let redacted = raw.content;
-    redacted = redacted.replace(/Sh\. Ramesh Kumar/g, "████████ [WITNESS-W1]");
-    redacted = redacted.replace(/\+91-98711-23456/g, "████████████ [REDACTED CELL]");
-    redacted = redacted.replace(/House No\. 89, Gali No\. 3, Govindpuri, New Delhi - 110019/g, "████████████████████ [REDACTED ADDRESS]");
-
-    documents.push({
-      ...raw,
-      case_id: "CASE-2026-DEL-402",
-      sha256_hash: hash,
-      original_sha256: hash,
-      merkle_leaf_hash: leafHash,
-      status: 'VERIFIED',
-      file_size_bytes: raw.content.length,
-      redacted_content: redacted,
-      tamper_flag: false,
-      kms_key_arn: "arn:aws:kms:ap-south-1:992019481921:key/nyayavault-hsm-bsa2023",
-      envelope_iv: "a9f8b7c6d5e4f3a2b1c0"
-    });
-  }
-
-  const caseRecord: CaseRecord = {
-    case_id: "CASE-2026-DEL-402",
-    fir_number: "402/2026",
-    police_station: "Special Cell, Lodhi Colony",
-    jurisdiction: "Patiala House Courts, New Delhi",
-    acts_sections: "IPC 302, 120B / BNS 103(1), 61(2), Arms Act 25/27",
-    crime_incident_datetime: "2026-03-11 23:30 IST",
-    io_name: "Insp. R.K. Varma",
-    io_badge: "DL-POL-8832",
-    prosecutor_name: "Adv. Alok Trivedi",
-    presiding_magistrate: "Smt. Vandana Jain, ASJ-03",
-    court_name: "Patiala House Courts Complex",
-    current_stage: 5,
-    merkle_root: "94e2a17cb6e95d51829033d59e99a89d70fa8d88e62f01f80ec45511b8b69324",
-    total_documents: documents.length,
-    integrity_score: 100.0,
-    quarantine_count: 0
-  };
-
   return {
-    caseRecord,
-    documents,
+    caseRecord: INITIAL_CASE,
+    documents: [...INITIAL_DOCUMENTS],
     auditBlocks: INITIAL_AUDIT_BLOCKS,
     contradictions: INITIAL_CONTRADICTIONS,
     timeline: INITIAL_TIMELINE

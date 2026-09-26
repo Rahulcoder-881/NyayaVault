@@ -34,6 +34,12 @@
   </a>
 </p>
 
+<p align="center">
+  <a href="https://rahulcoder-881.github.io/sih-mvp-2026/">
+    <img src="./preview_live.png" alt="NyayaVault Live Cryptographic Custody Dashboard" width="100%"/>
+  </a>
+</p>
+
 [🌐 Live Web Preview](https://rahulcoder-881.github.io/sih-mvp-2026/) •
 [Explore Key Features](#-core-capabilities) •
 [System Architecture](#-system-architecture) •

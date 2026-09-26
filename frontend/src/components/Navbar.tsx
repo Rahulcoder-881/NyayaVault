@@ -1,5 +1,5 @@
 import React from 'react';
-import { UserRole } from '../types';
+import type { UserRole } from '../types';
 import { USER_ROLES } from '../constants';
 import { 
   Shield, 
@@ -7,10 +7,7 @@ import {
   AlertTriangle, 
   FileCheck, 
   RotateCcw, 
-  Search,
-  Scale,
-  Sparkles,
-  Lock
+  Sparkles
 } from 'lucide-react';
 
 interface NavbarProps {

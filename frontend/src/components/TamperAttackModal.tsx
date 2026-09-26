@@ -1,14 +1,11 @@
 import React, { useState } from 'react';
-import { DocumentItem } from '../types';
+import type { DocumentItem } from '../types';
 import { 
   X, 
   AlertTriangle, 
   ShieldAlert, 
   RotateCcw, 
-  Zap, 
-  Binary, 
-  GitBranch, 
-  CheckCircle2 
+  Zap 
 } from 'lucide-react';
 
 interface TamperAttackModalProps {

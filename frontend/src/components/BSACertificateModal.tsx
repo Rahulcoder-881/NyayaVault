@@ -1,15 +1,12 @@
 import React, { useState } from 'react';
-import { BSACertificateData, CaseRecord } from '../types';
+import type { BSACertificateData, CaseRecord } from '../types';
 import { 
   X, 
   Printer, 
   CheckCircle2, 
   ShieldCheck, 
-  FileText, 
   Award, 
-  QrCode, 
-  Download,
-  Scale
+  QrCode
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 
@@ -88,7 +85,7 @@ export const BSACertificateModal: React.FC<BSACertificateModalProps> = ({
         {!certificateData && (
           <div className="p-6 space-y-4 text-xs no-print">
             <div className="p-4 rounded-xl bg-cyan-950/40 border border-cyan-500/30 text-slate-300 leading-relaxed text-xs">
-              <span className="font-bold text-cyan-300">Statutory Mandate:</span> Under Section 63(4)(c) of the Bharatiya Sakshya Adhiniyam, 2023, every electronic document, digital photo, ballistic scan, and seizure report must be accompanied by an official Certificate signed by the authorized digital custody officer affirming uncorrupted operation and hardware integrity.
+              <span className="font-bold text-cyan-300">Statutory Mandate ({caseRecord?.case_id || 'CASE-2026-DEL-402'}):</span> Under Section 63(4)(c) of the Bharatiya Sakshya Adhiniyam, 2023, every electronic document, digital photo, ballistic scan, and seizure report must be accompanied by an official Certificate signed by the authorized digital custody officer affirming uncorrupted operation and hardware integrity.
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">

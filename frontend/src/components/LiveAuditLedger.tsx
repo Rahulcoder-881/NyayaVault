@@ -1,14 +1,8 @@
 import React from 'react';
-import { AuditBlock } from '../types';
+import type { AuditBlock } from '../types';
 import { 
   History, 
-  ShieldCheck, 
-  ShieldAlert, 
-  Radio, 
-  FileText, 
-  User, 
-  Cpu, 
-  Lock 
+  User 
 } from 'lucide-react';
 
 interface LiveAuditLedgerProps {

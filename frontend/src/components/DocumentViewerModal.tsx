@@ -1,12 +1,11 @@
 import React, { useState } from 'react';
-import { DocumentItem, UserRole } from '../types';
+import type { DocumentItem, UserRole } from '../types';
 import { USER_ROLES } from '../constants';
 import { 
   X, 
   ShieldCheck, 
   ShieldAlert, 
   Printer, 
-  Lock, 
   Cpu, 
   MapPin, 
   FileText, 

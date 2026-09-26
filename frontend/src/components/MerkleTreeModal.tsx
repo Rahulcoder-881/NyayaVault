@@ -1,11 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { DocumentItem } from '../types';
+import type { DocumentItem } from '../types';
 import { 
   X, 
   GitBranch, 
-  CheckCircle2, 
   AlertTriangle, 
-  Binary, 
   ShieldCheck, 
   ArrowRight,
   RefreshCw

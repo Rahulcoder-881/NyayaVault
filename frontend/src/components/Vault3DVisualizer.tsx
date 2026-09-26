@@ -1,6 +1,6 @@
 import React, { useEffect, useRef } from 'react';
 import * as THREE from 'three';
-import { LifecycleStageId } from '../types';
+import type { LifecycleStageId } from '../types';
 import { LIFECYCLE_STAGES } from '../constants';
 import { ShieldAlert, ShieldCheck, Cpu } from 'lucide-react';
 
@@ -53,56 +53,60 @@ export const Vault3DVisualizer: React.FC<Vault3DVisualizerProps> = ({
     rendererRef.current = renderer;
 
     // 3. Lights
-    const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
+    const ambientLight = new THREE.AmbientLight(0xffffff, 0.7);
     scene.add(ambientLight);
 
-    const pointLight = new THREE.PointLight(isTampered ? 0xef4444 : 0x06b6d4, 2.5, 50);
-    pointLight.position.set(0, 0, 8);
+    const pointLight = new THREE.PointLight(isTampered ? 0xef4444 : 0x06b6d4, 3.2, 50);
+    pointLight.position.set(0, 2, 8);
     scene.add(pointLight);
+
+    const rimLight = new THREE.PointLight(isTampered ? 0xb91c1c : 0x6366f1, 2.0, 40);
+    rimLight.position.set(-6, -4, -4);
+    scene.add(rimLight);
 
     // 4. Central Cryptographic Vault Core
     const coreGeo = new THREE.IcosahedronGeometry(2.2, 2);
     const coreMat = new THREE.MeshStandardMaterial({
       color: isTampered ? 0xef4444 : 0x0891b2,
-      roughness: 0.2,
-      metalness: 0.85,
+      roughness: 0.15,
+      metalness: 0.9,
       wireframe: false,
       emissive: isTampered ? 0x7f1d1d : 0x0e7490,
-      emissiveIntensity: 0.6
+      emissiveIntensity: 0.75
     });
     const coreMesh = new THREE.Mesh(coreGeo, coreMat);
     scene.add(coreMesh);
     coreMeshRef.current = coreMesh;
 
     // Wireframe Cage around Core
-    const wireGeo = new THREE.IcosahedronGeometry(2.6, 1);
+    const wireGeo = new THREE.IcosahedronGeometry(2.65, 1);
     const wireMat = new THREE.MeshBasicMaterial({
       color: isTampered ? 0xf87171 : 0x67e8f9,
       wireframe: true,
       transparent: true,
-      opacity: 0.4
+      opacity: 0.45
     });
     const wireMesh = new THREE.Mesh(wireGeo, wireMat);
     scene.add(wireMesh);
     wireMeshRef.current = wireMesh;
 
     // 5. Holographic Orbit Rings
-    const ringGeo1 = new THREE.TorusGeometry(4.4, 0.04, 16, 100);
+    const ringGeo1 = new THREE.TorusGeometry(4.4, 0.045, 16, 100);
     const ringMat1 = new THREE.MeshBasicMaterial({
       color: isTampered ? 0xef4444 : 0x38bdf8,
       transparent: true,
-      opacity: 0.6
+      opacity: 0.65
     });
     const ring1 = new THREE.Mesh(ringGeo1, ringMat1);
     ring1.rotation.x = Math.PI / 3;
     scene.add(ring1);
     ring1Ref.current = ring1;
 
-    const ringGeo2 = new THREE.TorusGeometry(5.2, 0.03, 16, 100);
+    const ringGeo2 = new THREE.TorusGeometry(5.2, 0.035, 16, 100);
     const ringMat2 = new THREE.MeshBasicMaterial({
       color: isTampered ? 0xf87171 : 0x818cf8,
       transparent: true,
-      opacity: 0.4
+      opacity: 0.5
     });
     const ring2 = new THREE.Mesh(ringGeo2, ringMat2);
     ring2.rotation.y = Math.PI / 4;
@@ -119,13 +123,13 @@ export const Vault3DVisualizer: React.FC<Vault3DVisualizerProps> = ({
       const y = Math.sin(angle) * (radius * 0.45);
       const z = Math.sin(angle) * 1.5;
 
-      const nodeGeo = new THREE.SphereGeometry(0.42, 16, 16);
+      const nodeGeo = new THREE.SphereGeometry(0.44, 20, 20);
       const nodeMat = new THREE.MeshStandardMaterial({
         color: stage.id === activeStage ? 0x38bdf8 : new THREE.Color(stage.color),
         emissive: stage.id === activeStage ? 0x0284c7 : new THREE.Color(stage.color),
-        emissiveIntensity: 0.8,
-        metalness: 0.5,
-        roughness: 0.2
+        emissiveIntensity: 0.85,
+        metalness: 0.6,
+        roughness: 0.15
       });
       const nodeMesh = new THREE.Mesh(nodeGeo, nodeMat);
       nodeMesh.position.set(x, y, z);
@@ -139,7 +143,7 @@ export const Vault3DVisualizer: React.FC<Vault3DVisualizerProps> = ({
       const lineMat = new THREE.LineBasicMaterial({
         color: isTampered ? 0xef4444 : new THREE.Color(stage.color),
         transparent: true,
-        opacity: 0.35
+        opacity: 0.4
       });
       const line = new THREE.Line(lineGeo, lineMat);
       scene.add(line);
@@ -148,21 +152,24 @@ export const Vault3DVisualizer: React.FC<Vault3DVisualizerProps> = ({
     });
     stageNodesRef.current = stageNodes;
 
-    // 7. Background Particles
-    const partCount = 120;
+    // 7. Dynamic Cryptographic Particle Nebula
+    const partCount = 280;
     const partGeo = new THREE.BufferGeometry();
     const partPos = new Float32Array(partCount * 3);
     for (let p = 0; p < partCount * 3; p += 3) {
-      partPos[p] = (Math.random() - 0.5) * 22;
-      partPos[p + 1] = (Math.random() - 0.5) * 14;
-      partPos[p + 2] = (Math.random() - 0.5) * 10;
+      const r = 3 + Math.random() * 8;
+      const theta = Math.random() * Math.PI * 2;
+      const phi = (Math.random() - 0.5) * Math.PI;
+      partPos[p] = r * Math.cos(phi) * Math.cos(theta);
+      partPos[p + 1] = r * Math.sin(phi);
+      partPos[p + 2] = r * Math.cos(phi) * Math.sin(theta);
     }
     partGeo.setAttribute('position', new THREE.BufferAttribute(partPos, 3));
     const partMat = new THREE.PointsMaterial({
-      size: 0.08,
+      size: 0.09,
       color: isTampered ? 0xf87171 : 0x38bdf8,
       transparent: true,
-      opacity: 0.6
+      opacity: 0.65
     });
     const particles = new THREE.Points(partGeo, partMat);
     scene.add(particles);
@@ -233,41 +240,56 @@ export const Vault3DVisualizer: React.FC<Vault3DVisualizerProps> = ({
       />
 
       {/* Floating HUD Badges Overlay */}
-      <div className="absolute top-3 left-4 flex items-center space-x-2 pointer-events-none">
-        <div className={`p-2 rounded-lg border backdrop-blur-md flex items-center space-x-2 ${
+      <div className="absolute top-3 left-4 flex flex-wrap items-center gap-2 pointer-events-none">
+        <div className={`px-3 py-1.5 rounded-xl border backdrop-blur-md flex items-center space-x-2 shadow-lg ${
           isTampered 
-            ? 'bg-red-950/80 border-red-500/60 text-red-200' 
+            ? 'bg-red-950/85 border-red-500/60 text-red-200' 
             : 'bg-cyan-950/80 border-cyan-500/40 text-cyan-300'
         }`}>
           {isTampered ? (
-            <ShieldAlert className="w-5 h-5 text-red-400 animate-bounce" />
+            <ShieldAlert className="w-4 h-4 text-red-400 animate-bounce" />
           ) : (
-            <ShieldCheck className="w-5 h-5 text-cyan-400" />
+            <ShieldCheck className="w-4 h-4 text-cyan-400" />
           )}
-          <div className="text-xs font-semibold tracking-wider uppercase">
-            {isTampered ? 'TAMPER ATTACK DETECTED // MERKLE ROOT COMPROMISED' : 'CRYPTOGRAPHIC VAULT // 100% INTEGRITY'}
+          <div className="text-xs font-bold tracking-wider uppercase font-mono">
+            {isTampered ? 'TAMPER ALERT // QUARANTINE ENFORCED' : `CRYPTOGRAPHIC VAULT // ${integrityScore}% CONSENSUS`}
           </div>
         </div>
-        <div className="hidden sm:flex items-center space-x-1.5 px-3 py-1.5 rounded-lg bg-slate-900/80 border border-slate-700/60 text-slate-300 text-xs font-mono">
+        <div className="hidden sm:flex items-center space-x-1.5 px-3 py-1.5 rounded-xl bg-slate-900/85 border border-slate-700/60 text-slate-300 text-xs font-mono shadow-md">
           <Cpu className="w-3.5 h-3.5 text-indigo-400" />
           <span>FIPS 180-4 SHA-256</span>
+        </div>
+        <div className="hidden md:flex items-center space-x-1.5 px-2.5 py-1 rounded-lg bg-indigo-950/60 border border-indigo-500/30 text-indigo-300 text-[10px] font-mono">
+          <span className="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-ping" />
+          <span>THREE.JS WEBGL RENDERER</span>
         </div>
       </div>
 
       {/* Top Right Live Telemetry */}
-      <div className="absolute top-3 right-4 flex items-center space-x-2 pointer-events-none">
-        <div className="px-3 py-1.5 rounded-lg bg-slate-900/80 border border-slate-800 backdrop-blur-md text-right">
-          <div className="text-[10px] text-slate-400 uppercase font-mono tracking-widest">Case Merkle Root</div>
-          <div className={`text-xs font-mono font-bold truncate max-w-[150px] sm:max-w-[200px] ${
-            isTampered ? 'text-red-400' : 'text-cyan-400'
-          }`}>
-            {merkleRoot ? `${merkleRoot.substring(0, 16)}...` : 'CALCULATING...'}
+      <div className="absolute top-3 right-4 flex items-center space-x-2">
+        <div className="px-3.5 py-1.5 rounded-xl bg-slate-900/85 border border-slate-800/90 backdrop-blur-md shadow-lg flex items-center space-x-2">
+          <div className="text-right">
+            <div className="text-[10px] text-slate-400 uppercase font-mono tracking-widest">Merkle Tree Root</div>
+            <div className={`text-xs font-mono font-bold truncate max-w-[130px] sm:max-w-[200px] ${
+              isTampered ? 'text-red-400' : 'text-cyan-400'
+            }`}>
+              {merkleRoot ? `${merkleRoot.substring(0, 16)}...` : 'CALCULATING...'}
+            </div>
           </div>
+          {merkleRoot && (
+            <button
+              onClick={() => navigator.clipboard.writeText(merkleRoot)}
+              className="p-1.5 rounded-lg bg-slate-800/80 hover:bg-cyan-950 hover:text-cyan-300 text-slate-400 border border-slate-700 text-xs transition-colors"
+              title="Copy Merkle Root Hash"
+            >
+              <Cpu className="w-3.5 h-3.5" />
+            </button>
+          )}
         </div>
       </div>
 
       {/* Bottom Stage Selector Quick Bar */}
-      <div className="absolute bottom-2 inset-x-2 sm:inset-x-4 p-2 rounded-xl bg-slate-950/80 border border-slate-800/80 backdrop-blur-md flex items-center justify-between overflow-x-auto text-xs space-x-1">
+      <div className="absolute bottom-2.5 inset-x-2.5 sm:inset-x-4 p-2 rounded-xl bg-slate-950/85 border border-slate-800/90 backdrop-blur-md flex items-center justify-between overflow-x-auto text-xs space-x-1 shadow-xl">
         <span className="text-[11px] font-mono text-slate-400 px-2 uppercase tracking-wider shrink-0 hidden md:inline">
           6-Stage Custody:
         </span>
@@ -293,9 +315,9 @@ export const Vault3DVisualizer: React.FC<Vault3DVisualizerProps> = ({
           {activeStage !== null && (
             <button
               onClick={() => onSelectStage(null as any)}
-              className="text-[11px] text-cyan-400 hover:underline px-2 shrink-0"
+              className="text-[11px] text-cyan-400 hover:underline px-2 shrink-0 font-mono"
             >
-              Reset
+              Reset Filter
             </button>
           )}
         </div>

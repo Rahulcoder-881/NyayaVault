@@ -1,12 +1,11 @@
 import React, { useState } from 'react';
-import { DocumentItem, UserRole, LifecycleStageId } from '../types';
+import type { DocumentItem, UserRole, LifecycleStageId } from '../types';
 import { 
   FileText, 
   Search, 
   ShieldCheck, 
   ShieldAlert, 
-  Eye, 
-  Lock, 
+  Eye,
   Copy, 
   Check, 
   AlertTriangle, 
@@ -14,7 +13,8 @@ import {
   GitBranch, 
   Upload, 
   Filter,
-  UserX
+  UserX,
+  Fingerprint
 } from 'lucide-react';
 
 interface DocumentListProps {
@@ -156,17 +156,34 @@ export const DocumentList: React.FC<DocumentListProps> = ({
                   </div>
 
                   <div className="min-w-0 flex-1">
-                    <div className="flex flex-wrap items-center gap-2 mb-1">
+                    <div className="flex flex-wrap items-center gap-1.5 mb-1.5">
                       {doc.exhibit_number && (
-                        <span className="px-2 py-0.5 rounded font-mono font-bold text-[11px] bg-slate-800 text-cyan-300 border border-slate-700">
+                        <span className="px-2 py-0.5 rounded font-mono font-bold text-[11px] bg-slate-800 text-cyan-300 border border-slate-700 shadow-sm">
                           {doc.exhibit_number}
                         </span>
                       )}
-                      <span className="text-[10px] font-mono uppercase px-2 py-0.5 rounded bg-slate-800/80 text-slate-400">
+                      <span className="text-[10px] font-mono uppercase px-2 py-0.5 rounded bg-slate-800/90 text-slate-300 border border-slate-700/60">
                         Stage {doc.stage}: {doc.category}
                       </span>
+                      {doc.classification && (
+                        <span className={`text-[10px] font-mono uppercase px-1.5 py-0.5 rounded border ${
+                          doc.classification === 'FORENSIC_INTERNAL' 
+                            ? 'bg-purple-950/80 text-purple-300 border-purple-500/50'
+                            : doc.classification === 'CONFIDENTIAL'
+                            ? 'bg-amber-950/80 text-amber-300 border-amber-500/40'
+                            : doc.classification === 'RESTRICTED'
+                            ? 'bg-rose-950/80 text-rose-300 border-rose-500/50'
+                            : 'bg-slate-800/80 text-slate-400 border-slate-700'
+                        }`}>
+                          {doc.classification.replace('_', ' ')}
+                        </span>
+                      )}
+                      <span className="px-1.5 py-0.5 rounded text-[10px] font-mono text-cyan-300 bg-cyan-950/70 border border-cyan-500/40 flex items-center space-x-1" title="Zero-width invisible forensic watermark embedded">
+                        <Fingerprint className="w-3 h-3 text-cyan-400" />
+                        <span>STEGO SEAL</span>
+                      </span>
                       {isTampered ? (
-                        <span className="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-red-500 text-white flex items-center space-x-1 animate-pulse">
+                        <span className="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-red-600 text-white flex items-center space-x-1 animate-pulse shadow-md shadow-red-600/30">
                           <AlertTriangle className="w-3 h-3" />
                           <span>TAMPER DETECTED // QUARANTINED</span>
                         </span>
@@ -175,9 +192,9 @@ export const DocumentList: React.FC<DocumentListProps> = ({
                           WITNESS REDACTED
                         </span>
                       ) : (
-                        <span className="px-2 py-0.5 rounded text-[10px] font-mono text-emerald-400 bg-emerald-950/60 border border-emerald-500/30 flex items-center space-x-1">
-                          <ShieldCheck className="w-3 h-3" />
-                          <span>SEC 63 VERIFIED</span>
+                        <span className="px-2 py-0.5 rounded text-[10px] font-mono text-emerald-300 bg-emerald-950/70 border border-emerald-500/40 flex items-center space-x-1 shadow-sm">
+                          <ShieldCheck className="w-3 h-3 text-emerald-400" />
+                          <span>SEC 63 BSA CERTIFIED</span>
                         </span>
                       )}
                     </div>

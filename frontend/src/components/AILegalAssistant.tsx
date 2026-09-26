@@ -1,17 +1,13 @@
 import React, { useState } from 'react';
-import { ContradictionItem, TimelineEvent, DocumentItem } from '../types';
+import type { ContradictionItem, TimelineEvent } from '../types';
 import { 
   Sparkles, 
   Search, 
   AlertTriangle, 
   Clock, 
-  FileText, 
-  CheckCircle2, 
-  Scale, 
   X,
   ExternalLink,
-  ChevronRight,
-  ShieldAlert
+  ChevronRight
 } from 'lucide-react';
 
 interface AILegalAssistantProps {

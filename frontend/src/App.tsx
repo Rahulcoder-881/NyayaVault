@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { 
+import type { 
   UserRole, 
   DocumentItem, 
   CaseRecord, 
@@ -27,10 +27,9 @@ import {
   ShieldCheck, 
   CheckCircle2, 
   Award, 
-  Cpu, 
-  FileCheck2,
-  Lock,
-  Sparkles
+  Fingerprint,
+  Scale,
+  FileText
 } from 'lucide-react';
 
 export const App: React.FC = () => {
@@ -292,6 +291,70 @@ export const App: React.FC = () => {
       {/* Main Content Area */}
       <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
         
+        {/* Executive Cybernetic Telemetry Strip */}
+        <section className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+          <div className="glass-panel p-3.5 sm:p-4 rounded-2xl flex items-center justify-between border-slate-800/80 hover:border-cyan-500/30 transition-all">
+            <div className="space-y-1">
+              <div className="text-[11px] font-mono uppercase tracking-wider text-slate-400">Consensus Integrity</div>
+              <div className="flex items-center space-x-2">
+                <span className={`text-xl sm:text-2xl font-black font-mono ${hasTamperAlert ? 'text-red-400' : 'text-emerald-400'}`}>
+                  {caseRecord?.integrity_score || 100}%
+                </span>
+                <span className={`px-2 py-0.5 rounded text-[10px] font-mono font-bold ${
+                  hasTamperAlert ? 'bg-red-950 text-red-300 border border-red-500/40 animate-pulse' : 'bg-emerald-950 text-emerald-300 border border-emerald-500/40'
+                }`}>
+                  {hasTamperAlert ? 'COMPROMISED' : 'SECURE'}
+                </span>
+              </div>
+            </div>
+            <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${hasTamperAlert ? 'bg-red-900/40 text-red-400' : 'bg-emerald-900/40 text-emerald-400'}`}>
+              <ShieldCheck className="w-5 h-5" />
+            </div>
+          </div>
+
+          <div className="glass-panel p-3.5 sm:p-4 rounded-2xl flex items-center justify-between border-slate-800/80 hover:border-cyan-500/30 transition-all">
+            <div className="space-y-1">
+              <div className="text-[11px] font-mono uppercase tracking-wider text-slate-400">Ingested Exhibits</div>
+              <div className="flex items-center space-x-2">
+                <span className="text-xl sm:text-2xl font-black font-mono text-cyan-400">{documents.length}</span>
+                <span className="text-xs text-slate-400 font-sans">Active Records</span>
+              </div>
+            </div>
+            <div className="w-10 h-10 rounded-xl bg-cyan-950/60 text-cyan-400 border border-cyan-500/20 flex items-center justify-center">
+              <FileText className="w-5 h-5" />
+            </div>
+          </div>
+
+          <div className="glass-panel p-3.5 sm:p-4 rounded-2xl flex items-center justify-between border-slate-800/80 hover:border-indigo-500/30 transition-all">
+            <div className="space-y-1">
+              <div className="text-[11px] font-mono uppercase tracking-wider text-slate-400">Statutory Standard</div>
+              <div className="flex items-center space-x-2">
+                <span className="text-xs sm:text-sm font-bold text-indigo-300 font-heading">Sec 63 BSA 2023</span>
+              </div>
+              <div className="text-[10px] text-slate-400 font-mono">Court Admissible Manifest</div>
+            </div>
+            <div className="w-10 h-10 rounded-xl bg-indigo-950/60 text-indigo-400 border border-indigo-500/20 flex items-center justify-center">
+              <Scale className="w-5 h-5" />
+            </div>
+          </div>
+
+          <div className="glass-panel p-3.5 sm:p-4 rounded-2xl flex items-center justify-between border-slate-800/80 hover:border-cyan-500/30 transition-all">
+            <div className="space-y-1">
+              <div className="text-[11px] font-mono uppercase tracking-wider text-slate-400">Forensic Attribution</div>
+              <div className="flex items-center space-x-2">
+                <span className="text-xs sm:text-sm font-bold text-cyan-300 font-mono">STEGO SEAL</span>
+              </div>
+              <div className="text-[10px] text-emerald-400 font-mono flex items-center space-x-1">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                <span>Zero-Width Token Active</span>
+              </div>
+            </div>
+            <div className="w-10 h-10 rounded-xl bg-cyan-950/60 text-cyan-400 border border-cyan-500/20 flex items-center justify-center">
+              <Fingerprint className="w-5 h-5" />
+            </div>
+          </div>
+        </section>
+
         {/* Top Hero: 3D Cryptographic Vault & Telemetry */}
         <section>
           <Vault3DVisualizer

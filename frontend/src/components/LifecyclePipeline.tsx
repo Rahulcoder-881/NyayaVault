@@ -1,5 +1,5 @@
 import React from 'react';
-import { LifecycleStageId, DocumentItem } from '../types';
+import type { LifecycleStageId, DocumentItem } from '../types';
 import { LIFECYCLE_STAGES } from '../constants';
 import { 
   FileText, 

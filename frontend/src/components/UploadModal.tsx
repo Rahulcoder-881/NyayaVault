@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
-import { UserRole, LifecycleStageId } from '../types';
+import type { UserRole } from '../types';
 import { USER_ROLES, LIFECYCLE_STAGES } from '../constants';
-import { X, Upload, FileText, CheckCircle2, Shield } from 'lucide-react';
+import { X, Upload, Shield } from 'lucide-react';
 
 interface UploadModalProps {
   isOpen: boolean;

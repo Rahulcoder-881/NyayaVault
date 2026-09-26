@@ -78,8 +78,8 @@ By leveraging **SHA-256 cryptographic hashing, HMAC digital signatures, Merkle T
 
 ### 1. Clone Repository
 ```bash
-git clone https://github.com/<YOUR_USERNAME>/<YOUR_REPO_NAME>.git
-cd "SIH MVP"
+git clone https://github.com/Rahulcoder-881/NyayaVault.git
+cd NyayaVault
 ```
 
 ---

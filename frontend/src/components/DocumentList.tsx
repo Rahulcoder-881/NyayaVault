@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import type { DocumentItem, UserRole, LifecycleStageId } from '../types';
+import { USER_ROLES } from '../constants';
 import { 
   FileText, 
   Search, 
@@ -14,7 +15,8 @@ import {
   Upload, 
   Filter,
   UserX,
-  Fingerprint
+  Fingerprint,
+  Lock
 } from 'lucide-react';
 
 interface DocumentListProps {
@@ -43,6 +45,8 @@ export const DocumentList: React.FC<DocumentListProps> = ({
   const [searchTerm, setSearchTerm] = useState('');
   const [categoryFilter, setCategoryFilter] = useState<string>('ALL');
   const [copiedHash, setCopiedHash] = useState<string | null>(null);
+
+  const roleInfo = USER_ROLES[currentRole];
 
   const handleCopyHash = (e: React.MouseEvent, hash: string) => {
     e.stopPropagation();
@@ -74,6 +78,21 @@ export const DocumentList: React.FC<DocumentListProps> = ({
 
   return (
     <div className="w-full space-y-4">
+      {/* Zero PII Alert for Admin Role */}
+      {!roleInfo.canViewAssigned && (
+        <div className="p-3 rounded-xl bg-purple-950/40 border border-purple-500/40 text-purple-200 text-xs flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <Lock className="w-4 h-4 text-purple-400" />
+            <span>
+              <strong>Zero-PII Governance Enforced (Rule 8.2):</strong> As System Administrator, sensitive witness testimonies and case bodies are masked. Cryptographic hashes & blockchain verification are active.
+            </span>
+          </div>
+          <span className="font-mono text-[10px] text-purple-400 px-2 py-0.5 rounded bg-purple-900/60 border border-purple-500/30">
+            DPDP Act 2023 Compliant
+          </span>
+        </div>
+      )}
+
       {/* Control & Search Bar */}
       <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 p-3 rounded-2xl bg-slate-900/60 border border-slate-800">
         
@@ -109,13 +128,24 @@ export const DocumentList: React.FC<DocumentListProps> = ({
           </div>
 
           {/* Upload Action */}
-          <button
-            onClick={onOpenUploadModal}
-            className="flex items-center space-x-1.5 px-3 py-1.5 rounded-xl bg-cyan-600 hover:bg-cyan-500 text-white text-xs font-semibold shadow-md shadow-cyan-600/20 transition-all shrink-0 ml-2"
-          >
-            <Upload className="w-3.5 h-3.5" />
-            <span>Ingest Document</span>
-          </button>
+          {roleInfo.canUpload ? (
+            <button
+              onClick={onOpenUploadModal}
+              className="flex items-center space-x-1.5 px-3 py-1.5 rounded-xl bg-cyan-600 hover:bg-cyan-500 text-white text-xs font-semibold shadow-md shadow-cyan-600/20 transition-all shrink-0 ml-2"
+            >
+              <Upload className="w-3.5 h-3.5" />
+              <span>Ingest Document</span>
+            </button>
+          ) : (
+            <button
+              disabled
+              title="Upload restricted under RBAC Rule 8.2 for your active persona"
+              className="flex items-center space-x-1.5 px-3 py-1.5 rounded-xl bg-slate-800 text-slate-500 text-xs font-semibold cursor-not-allowed shrink-0 ml-2 border border-slate-700/50"
+            >
+              <Lock className="w-3.5 h-3.5" />
+              <span>Upload Denied</span>
+            </button>
+          )}
         </div>
 
       </div>

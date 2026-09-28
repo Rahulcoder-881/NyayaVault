@@ -7,7 +7,11 @@ import {
   AlertTriangle, 
   FileCheck, 
   RotateCcw, 
-  Sparkles
+  Sparkles,
+  BookOpen,
+  Blocks,
+  UserCheck,
+  KeyRound
 } from 'lucide-react';
 
 interface NavbarProps {
@@ -19,6 +23,10 @@ interface NavbarProps {
   onOpenCertModal: () => void;
   onRestoreAll: () => void;
   onOpenAISearch: () => void;
+  onOpenDocsModal: () => void;
+  onOpenBlockchainModal: () => void;
+  onOpenGrantAccessModal: () => void;
+  onOpenAuthModal: () => void;
 }
 
 export const Navbar: React.FC<NavbarProps> = ({
@@ -29,7 +37,11 @@ export const Navbar: React.FC<NavbarProps> = ({
   onOpenTamperModal,
   onOpenCertModal,
   onRestoreAll,
-  onOpenAISearch
+  onOpenAISearch,
+  onOpenDocsModal,
+  onOpenBlockchainModal,
+  onOpenGrantAccessModal,
+  onOpenAuthModal
 }) => {
   const activeRoleInfo = USER_ROLES[currentRole];
   const isCompromised = quarantineCount > 0 || integrityScore < 100;
@@ -115,6 +127,39 @@ export const Navbar: React.FC<NavbarProps> = ({
             </button>
           )}
 
+          {/* Technical Docs Suite Button */}
+          <button
+            onClick={onOpenDocsModal}
+            className="flex items-center space-x-1.5 px-3 py-1.5 rounded-xl bg-blue-950/60 border border-blue-500/40 hover:bg-blue-900/60 text-blue-200 text-xs font-medium transition-all shadow-sm"
+            title="Read 8-Chapter Technical & System Architecture Documentation (SIH 26190)"
+          >
+            <BookOpen className="w-3.5 h-3.5 text-blue-400" />
+            <span className="hidden xl:inline">Technical Docs</span>
+            <span className="xl:hidden">Docs</span>
+          </button>
+
+          {/* Blockchain Ledger Explorer */}
+          <button
+            onClick={onOpenBlockchainModal}
+            className="flex items-center space-x-1.5 px-3 py-1.5 rounded-xl bg-purple-950/60 border border-purple-500/40 hover:bg-purple-900/60 text-purple-200 text-xs font-medium transition-all shadow-sm"
+            title="Inspect Polygon / Hyperledger On-Chain Hash Anchors & Smart Contract"
+          >
+            <Blocks className="w-3.5 h-3.5 text-purple-400" />
+            <span className="hidden xl:inline">Blockchain Ledger</span>
+            <span className="xl:hidden">Ledger</span>
+          </button>
+
+          {/* Grant Access Modal (SHO/Admin only or viewable) */}
+          <button
+            onClick={onOpenGrantAccessModal}
+            className="flex items-center space-x-1.5 px-3 py-1.5 rounded-xl bg-amber-950/60 border border-amber-500/40 hover:bg-amber-900/60 text-amber-200 text-xs font-medium transition-all shadow-sm"
+            title="Time-Limited Evidence Access Delegation & Auto-Expiring Links"
+          >
+            <UserCheck className="w-3.5 h-3.5 text-amber-400" />
+            <span className="hidden xl:inline">Grant Access</span>
+            <span className="xl:hidden">Access</span>
+          </button>
+
           {/* Generate Sec 63 BSA Cert */}
           <button
             onClick={onOpenCertModal}
@@ -128,7 +173,11 @@ export const Navbar: React.FC<NavbarProps> = ({
 
           {/* RBAC Persona Switcher Dropdown */}
           <div className="relative group">
-            <button className="flex items-center space-x-2 pl-2.5 pr-3 py-1.5 rounded-xl bg-slate-900/90 border border-slate-700/80 hover:border-cyan-500/50 text-slate-200 text-xs transition-all">
+            <button 
+              onClick={onOpenAuthModal}
+              className="flex items-center space-x-2 pl-2.5 pr-3 py-1.5 rounded-xl bg-slate-900/90 border border-slate-700/80 hover:border-cyan-500/50 text-slate-200 text-xs transition-all"
+              title="Click to Open MFA Authentication & RBAC Inspector"
+            >
               <span className="text-base">{activeRoleInfo.avatarIcon}</span>
               <div className="text-left hidden sm:block">
                 <div className="font-semibold text-slate-100 leading-tight">{activeRoleInfo.name}</div>
@@ -139,10 +188,16 @@ export const Navbar: React.FC<NavbarProps> = ({
 
             {/* Dropdown Menu */}
             <div className="absolute right-0 mt-2 w-80 rounded-2xl bg-[#090e1c] border border-slate-700/80 shadow-2xl p-2 hidden group-hover:block z-50 backdrop-blur-2xl">
-              <div className="px-3 py-2 border-b border-slate-800 text-[11px] font-mono uppercase text-slate-400">
-                Switch Role-Based Persona (RBAC)
+              <div className="px-3 py-2 border-b border-slate-800 text-[11px] font-mono uppercase text-slate-400 flex items-center justify-between">
+                <span>Switch Role-Based Persona</span>
+                <button 
+                  onClick={onOpenAuthModal} 
+                  className="text-cyan-400 hover:underline flex items-center gap-1 font-sans font-semibold text-[10px]"
+                >
+                  <KeyRound className="w-3 h-3" /> MFA Login
+                </button>
               </div>
-              <div className="space-y-1 mt-1">
+              <div className="space-y-1 mt-1 max-h-[320px] overflow-y-auto">
                 {(Object.keys(USER_ROLES) as UserRole[]).map((roleKey) => {
                   const r = USER_ROLES[roleKey];
                   const isSelected = r.role === currentRole;

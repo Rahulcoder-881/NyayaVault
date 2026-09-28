@@ -21,6 +21,10 @@ import { MerkleTreeModal } from './components/MerkleTreeModal';
 import { AILegalAssistant } from './components/AILegalAssistant';
 import { LiveAuditLedger } from './components/LiveAuditLedger';
 import { UploadModal } from './components/UploadModal';
+import { DocsViewerModal } from './components/DocsViewerModal';
+import { BlockchainLedgerModal } from './components/BlockchainLedgerModal';
+import { GrantAccessModal } from './components/GrantAccessModal';
+import { OfficerAuthModal } from './components/OfficerAuthModal';
 import { 
   INITIAL_CASE,
   INITIAL_DOCUMENTS,
@@ -34,11 +38,10 @@ import {
   AlertTriangle, 
   RotateCcw, 
   ShieldCheck, 
-  CheckCircle2, 
-  Award, 
-  Fingerprint,
-  Scale,
-  FileText
+  CheckCircle2,
+  Award,
+  FileText,
+  Clock
 } from 'lucide-react';
 
 export const App: React.FC = () => {
@@ -61,6 +64,10 @@ export const App: React.FC = () => {
   const [certData, setCertData] = useState<BSACertificateData | null>(null);
   const [isAIModalOpen, setIsAIModalOpen] = useState(false);
   const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
+  const [isDocsModalOpen, setIsDocsModalOpen] = useState(false);
+  const [isBlockchainModalOpen, setIsBlockchainModalOpen] = useState(false);
+  const [isGrantAccessModalOpen, setIsGrantAccessModalOpen] = useState(false);
+  const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
 
   // WebSocket connection state
   const [isWsConnected, setIsWsConnected] = useState(true);
@@ -525,6 +532,10 @@ export const App: React.FC = () => {
         onOpenCertModal={() => setIsCertModalOpen(true)}
         onRestoreAll={handleRestoreAll}
         onOpenAISearch={() => setIsAIModalOpen(true)}
+        onOpenDocsModal={() => setIsDocsModalOpen(true)}
+        onOpenBlockchainModal={() => setIsBlockchainModalOpen(true)}
+        onOpenGrantAccessModal={() => setIsGrantAccessModalOpen(true)}
+        onOpenAuthModal={() => setIsAuthModalOpen(true)}
       />
 
       {/* Critical Security Alert Ribbon if Tampered */}
@@ -549,11 +560,43 @@ export const App: React.FC = () => {
       {/* Main Content Area */}
       <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
         
-        {/* Executive Cybernetic Telemetry Strip */}
+        {/* Executive Cybernetic Telemetry Strip (4 Canonical Cards) */}
         <section className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+          
+          {/* Card 1: Total Documents */}
           <div className="glass-panel p-3.5 sm:p-4 rounded-2xl flex items-center justify-between border-slate-800/80 hover:border-cyan-500/30 transition-all">
             <div className="space-y-1">
-              <div className="text-[11px] font-mono uppercase tracking-wider text-slate-400">Consensus Integrity</div>
+              <div className="text-[11px] font-mono uppercase tracking-wider text-slate-400">Total Documents</div>
+              <div className="flex items-center space-x-2">
+                <span className="text-xl sm:text-2xl font-black font-mono text-cyan-400">{documents.length}</span>
+                <span className="text-xs text-slate-400 font-sans">Ingested & Encrypted</span>
+              </div>
+              <div className="text-[10px] text-cyan-400/80 font-mono">FIPS 140-3 AES-256-GCM</div>
+            </div>
+            <div className="w-10 h-10 rounded-xl bg-cyan-950/60 text-cyan-400 border border-cyan-500/20 flex items-center justify-center">
+              <FileText className="w-5 h-5" />
+            </div>
+          </div>
+
+          {/* Card 2: Pending Approvals */}
+          <div className="glass-panel p-3.5 sm:p-4 rounded-2xl flex items-center justify-between border-slate-800/80 hover:border-amber-500/30 transition-all">
+            <div className="space-y-1">
+              <div className="text-[11px] font-mono uppercase tracking-wider text-slate-400">Pending Approvals</div>
+              <div className="flex items-center space-x-2">
+                <span className="text-xl sm:text-2xl font-black font-mono text-amber-400">2</span>
+                <span className="text-xs text-slate-400 font-sans">Awaiting Sign-off</span>
+              </div>
+              <div className="text-[10px] text-amber-400/80 font-mono">SHO & Judicial Review</div>
+            </div>
+            <div className="w-10 h-10 rounded-xl bg-amber-950/60 text-amber-400 border border-amber-500/20 flex items-center justify-center">
+              <Clock className="w-5 h-5" />
+            </div>
+          </div>
+
+          {/* Card 3: Chain Integrity Status */}
+          <div className="glass-panel p-3.5 sm:p-4 rounded-2xl flex items-center justify-between border-slate-800/80 hover:border-emerald-500/30 transition-all">
+            <div className="space-y-1">
+              <div className="text-[11px] font-mono uppercase tracking-wider text-slate-400">Chain Integrity Status</div>
               <div className="flex items-center space-x-2">
                 <span className={`text-xl sm:text-2xl font-black font-mono ${hasTamperAlert ? 'text-red-400' : 'text-emerald-400'}`}>
                   {caseRecord?.integrity_score || 100}%
@@ -561,54 +604,32 @@ export const App: React.FC = () => {
                 <span className={`px-2 py-0.5 rounded text-[10px] font-mono font-bold ${
                   hasTamperAlert ? 'bg-red-950 text-red-300 border border-red-500/40 animate-pulse' : 'bg-emerald-950 text-emerald-300 border border-emerald-500/40'
                 }`}>
-                  {hasTamperAlert ? 'COMPROMISED' : 'SECURE'}
+                  {hasTamperAlert ? 'COMPROMISED' : 'SYNCHRONIZED'}
                 </span>
               </div>
+              <div className="text-[10px] text-slate-400 font-mono">Polygon Block #18,421,006</div>
             </div>
             <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${hasTamperAlert ? 'bg-red-900/40 text-red-400' : 'bg-emerald-900/40 text-emerald-400'}`}>
               <ShieldCheck className="w-5 h-5" />
             </div>
           </div>
 
-          <div className="glass-panel p-3.5 sm:p-4 rounded-2xl flex items-center justify-between border-slate-800/80 hover:border-cyan-500/30 transition-all">
+          {/* Card 4: Security Alerts */}
+          <div className="glass-panel p-3.5 sm:p-4 rounded-2xl flex items-center justify-between border-slate-800/80 hover:border-red-500/30 transition-all">
             <div className="space-y-1">
-              <div className="text-[11px] font-mono uppercase tracking-wider text-slate-400">Ingested Exhibits</div>
+              <div className="text-[11px] font-mono uppercase tracking-wider text-slate-400">Security Alerts</div>
               <div className="flex items-center space-x-2">
-                <span className="text-xl sm:text-2xl font-black font-mono text-cyan-400">{documents.length}</span>
-                <span className="text-xs text-slate-400 font-sans">Active Records</span>
+                <span className={`text-xl sm:text-2xl font-black font-mono ${hasTamperAlert ? 'text-red-400' : 'text-slate-200'}`}>
+                  {caseRecord?.quarantine_count || 0}
+                </span>
+                <span className="text-xs text-slate-400 font-sans">
+                  {hasTamperAlert ? 'Active Quarantines' : 'Active Threats: 0'}
+                </span>
               </div>
+              <div className="text-[10px] text-slate-400 font-mono">Zero-Trust Sentinel Active</div>
             </div>
-            <div className="w-10 h-10 rounded-xl bg-cyan-950/60 text-cyan-400 border border-cyan-500/20 flex items-center justify-center">
-              <FileText className="w-5 h-5" />
-            </div>
-          </div>
-
-          <div className="glass-panel p-3.5 sm:p-4 rounded-2xl flex items-center justify-between border-slate-800/80 hover:border-indigo-500/30 transition-all">
-            <div className="space-y-1">
-              <div className="text-[11px] font-mono uppercase tracking-wider text-slate-400">Statutory Standard</div>
-              <div className="flex items-center space-x-2">
-                <span className="text-xs sm:text-sm font-bold text-indigo-300 font-heading">Sec 63 BSA 2023</span>
-              </div>
-              <div className="text-[10px] text-slate-400 font-mono">Court Admissible Manifest</div>
-            </div>
-            <div className="w-10 h-10 rounded-xl bg-indigo-950/60 text-indigo-400 border border-indigo-500/20 flex items-center justify-center">
-              <Scale className="w-5 h-5" />
-            </div>
-          </div>
-
-          <div className="glass-panel p-3.5 sm:p-4 rounded-2xl flex items-center justify-between border-slate-800/80 hover:border-cyan-500/30 transition-all">
-            <div className="space-y-1">
-              <div className="text-[11px] font-mono uppercase tracking-wider text-slate-400">Forensic Attribution</div>
-              <div className="flex items-center space-x-2">
-                <span className="text-xs sm:text-sm font-bold text-cyan-300 font-mono">STEGO SEAL</span>
-              </div>
-              <div className="text-[10px] text-emerald-400 font-mono flex items-center space-x-1">
-                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-                <span>Zero-Width Token Active</span>
-              </div>
-            </div>
-            <div className="w-10 h-10 rounded-xl bg-cyan-950/60 text-cyan-400 border border-cyan-500/20 flex items-center justify-center">
-              <Fingerprint className="w-5 h-5" />
+            <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${hasTamperAlert ? 'bg-red-900/60 text-red-400 border border-red-500/40' : 'bg-slate-900/60 text-slate-400 border border-slate-700/40'}`}>
+              <AlertTriangle className="w-5 h-5" />
             </div>
           </div>
         </section>
@@ -785,6 +806,35 @@ export const App: React.FC = () => {
         onClose={() => setIsUploadModalOpen(false)}
         currentRole={currentRole}
         onUpload={handleUploadDocument}
+      />
+
+      {/* 7. System Architecture & Specification Suite (8 Chapters) */}
+      <DocsViewerModal
+        isOpen={isDocsModalOpen}
+        onClose={() => setIsDocsModalOpen(false)}
+      />
+
+      {/* 8. Blockchain Ledger & Smart Contract Explorer */}
+      <BlockchainLedgerModal
+        isOpen={isBlockchainModalOpen}
+        onClose={() => setIsBlockchainModalOpen(false)}
+        documents={documents}
+      />
+
+      {/* 9. Timed Evidence Access Delegation (Rule 8.2) */}
+      <GrantAccessModal
+        isOpen={isGrantAccessModalOpen}
+        onClose={() => setIsGrantAccessModalOpen(false)}
+        currentRole={currentRole}
+        currentCaseId={caseRecord?.case_id || 'CASE-2026-DEL-402'}
+      />
+
+      {/* 10. Officer Multi-Factor Authentication & RBAC Switcher */}
+      <OfficerAuthModal
+        isOpen={isAuthModalOpen}
+        onClose={() => setIsAuthModalOpen(false)}
+        currentRole={currentRole}
+        onSelectRole={(newRole) => setCurrentRole(newRole)}
       />
 
     </div>

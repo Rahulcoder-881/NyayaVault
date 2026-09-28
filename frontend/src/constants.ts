@@ -3,17 +3,42 @@ import type { RoleInfo, LifecycleStageMeta, UserRole } from './types';
 export const USER_ROLES: Record<UserRole, RoleInfo> = {
   IO_POLICE: {
     role: 'IO_POLICE',
-    label: 'Investigating Officer (Police)',
+    label: 'Investigating Officer (IO)',
     name: 'Insp. R.K. Varma',
     badge: 'DL-POL-8832',
     avatarIcon: '👮',
     description: 'Special Cell, Lodhi Colony. Responsible for FIR ingestion, field seizures, and case diary.',
+    canUpload: true,
+    canViewAssigned: true,
+    canVerifyHash: true,
+    canGrantAccess: false,
+    canMarkExhibits: false,
     permissions: [
       'Upload FIR & General Diary logs',
       'Register Seizure Memos & Panchnamas with GPS',
       'Record Section 180 BNSS witness statements',
       'Generate Sec 63 BSA Digital Evidence Certificate',
-      'Restricted from viewing internal CFSL forensic lab worknotes'
+      'Verify on-chain cryptographic hashes'
+    ]
+  },
+  SHO_ADMIN: {
+    role: 'SHO_ADMIN',
+    label: 'Station House Officer (SHO / Senior Admin)',
+    name: 'ACP Devendra Shekhawat',
+    badge: 'DL-SHO-0419',
+    avatarIcon: '⭐',
+    description: 'Station Head & Administrative Supervisor. Approves case files and manages inter-agency access delegation.',
+    canUpload: true,
+    canViewAssigned: true,
+    canVerifyHash: true,
+    canGrantAccess: true,
+    canMarkExhibits: false,
+    permissions: [
+      'Supervise all station case files & FIR dockets',
+      'Approve evidence submissions to CFSL labs',
+      'Grant timed case permissions & secure delegation links',
+      'Review Station House audit logs and chain of custody',
+      'Trigger security quarantine on suspicious records'
     ]
   },
   FORENSIC_LAB: {
@@ -23,6 +48,11 @@ export const USER_ROLES: Record<UserRole, RoleInfo> = {
     badge: 'CFSL-DEL-BALL-04',
     avatarIcon: '🔬',
     description: 'Senior Scientific Officer, Ballistics & Physical Sciences Division, CFSL New Delhi.',
+    canUpload: true,
+    canViewAssigned: true,
+    canVerifyHash: true,
+    canGrantAccess: false,
+    canMarkExhibits: false,
     permissions: [
       'Intake sealed physical & digital exhibits (CoC stamps)',
       'Upload & sign Ballistics / Toxicology / DNA certificates',
@@ -37,6 +67,11 @@ export const USER_ROLES: Record<UserRole, RoleInfo> = {
     badge: 'DLS-PROS-0941',
     avatarIcon: '⚖️',
     description: 'Special Public Prosecutor, Directorate of Prosecution, GNCTD.',
+    canUpload: false,
+    canViewAssigned: true,
+    canVerifyHash: true,
+    canGrantAccess: false,
+    canMarkExhibits: false,
     permissions: [
       'Access complete unredacted case bundle',
       'Apply cryptographic witness protection redactions (Witness Protection Scheme 2018)',
@@ -51,12 +86,37 @@ export const USER_ROLES: Record<UserRole, RoleInfo> = {
     badge: 'DJS-ASJ-028',
     avatarIcon: '🏛️',
     description: 'Additional Sessions Judge (ASJ-03), Patiala House Courts Complex, New Delhi.',
+    canUpload: false,
+    canViewAssigned: true,
+    canVerifyHash: true,
+    canGrantAccess: false,
+    canMarkExhibits: true,
     permissions: [
       'Master unredacted judicial record inspection',
       'Admit and mark electronic court exhibits (Ex. P-1 to Ex. P-N)',
       'Issue electronic court seals and judicial bail/interim orders',
       'Authorize Section 63 BSA 2023 legal certificate admission',
       'Execute permanent zero-knowledge immutable archival lock'
+    ]
+  },
+  SYS_ADMIN: {
+    role: 'SYS_ADMIN',
+    label: 'System Administrator (NCRB Tech Division)',
+    name: 'Naveen Swaminathan',
+    badge: 'NCRB-SEC-7701',
+    avatarIcon: '🛡️',
+    description: 'NCRB Infrastructure & Security Operations. Manages system policies, encryption keys, and ledger telemetry.',
+    canUpload: false,
+    canViewAssigned: false,
+    canVerifyHash: true,
+    canGrantAccess: true,
+    canMarkExhibits: false,
+    permissions: [
+      'Audit blockchain node synchronization & transaction status',
+      'Enforce zero-plaintext storage policies and KMS key rotation',
+      'Manage agency onboarding & RBAC user role provisioning',
+      'Zero Case PII View: Cannot access or view sensitive case documents',
+      'Inspect tamper alerts and hardware enclave health'
     ]
   }
 };

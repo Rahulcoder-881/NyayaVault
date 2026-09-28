@@ -1,8 +1,10 @@
 export type UserRole = 
   | 'IO_POLICE' 
+  | 'SHO_ADMIN'
   | 'FORENSIC_LAB' 
   | 'PROSECUTOR' 
-  | 'JUDGE_MAGISTRATE';
+  | 'JUDGE_MAGISTRATE'
+  | 'SYS_ADMIN';
 
 export interface RoleInfo {
   role: UserRole;
@@ -12,6 +14,11 @@ export interface RoleInfo {
   avatarIcon: string;
   description: string;
   permissions: string[];
+  canUpload: boolean;
+  canViewAssigned: boolean;
+  canVerifyHash: boolean;
+  canGrantAccess: boolean;
+  canMarkExhibits: boolean;
 }
 
 export type LifecycleStageId = 1 | 2 | 3 | 4 | 5 | 6;
@@ -63,6 +70,15 @@ export interface DocumentItem {
   };
   kms_key_arn: string;
   envelope_iv: string;
+  ocr_extracted_text?: string;
+  ocr_language?: string;
+  extracted_entities?: {
+    suspects?: string[];
+    locations?: string[];
+    legal_sections?: string[];
+  };
+  blockchain_tx_id?: string;
+  blockchain_block?: number;
 }
 
 export interface CaseRecord {

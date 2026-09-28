@@ -6,6 +6,8 @@
 
 [![Smart India Hackathon](https://img.shields.io/badge/Smart%20India%20Hackathon-SIH%20MVP%202026-orange?style=for-the-badge&logo=target)](https://github.com/Rahulcoder-881/sih-mvp-2026)
 [![Live Web Preview](https://img.shields.io/badge/Live%20Demo-Web%20Preview%20Online-00f0ff?style=for-the-badge&logo=google-chrome)](https://rahulcoder-881.github.io/sih-mvp-2026/)
+[![Eco Mode](https://img.shields.io/badge/Eco--Friendly-Zero%20GPU%20%7C%20Low%20Power-10b981?style=for-the-badge&logo=leaf)](https://github.com/Rahulcoder-881/sih-mvp-2026)
+[![Accessibility](https://img.shields.io/badge/Accessibility-WCAG%20AAA%20Compliant-3b82f6?style=for-the-badge&logo=w3c)](https://github.com/Rahulcoder-881/sih-mvp-2026)
 [![Legal Compliance](https://img.shields.io/badge/BSA%202023-Section%2063%20Certified-0284c7?style=for-the-badge&logo=databricks)](https://github.com/Rahulcoder-881/sih-mvp-2026)
 [![Cryptography](https://img.shields.io/badge/Cryptography-FIPS%20180--4%20SHA--256-10b981?style=for-the-badge&logo=letsencrypt)](https://github.com/Rahulcoder-881/sih-mvp-2026)
 [![Frontend](https://img.shields.io/badge/Frontend-React%2019%20%7C%20Vite%20%7C%20Three.js-6366f1?style=for-the-badge&logo=react)](https://github.com/Rahulcoder-881/sih-mvp-2026)

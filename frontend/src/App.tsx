@@ -1633,6 +1633,7 @@ export const App: React.FC = () => {
         onClose={() => setIsUploadModalOpen(false)}
         currentRole={currentRole}
         onUpload={handleUploadDocument}
+        onSelectDocument={setSelectedDoc}
       />
 
       {/* 7. System Architecture & Specification Suite (8 Chapters) */}

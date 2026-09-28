@@ -31,8 +31,6 @@ export const UploadModal: React.FC<UploadModalProps> = ({
   currentRole,
   onUpload
 }) => {
-  if (!isOpen) return null;
-
   const roleInfo = USER_ROLES[currentRole];
   const [title, setTitle] = useState('');
   const [stage, setStage] = useState<number>(2);
@@ -45,6 +43,8 @@ export const UploadModal: React.FC<UploadModalProps> = ({
     sections?: string[];
     locations?: string[];
   } | null>(null);
+
+  if (!isOpen) return null;
 
   const categories = [
     'FIR', 

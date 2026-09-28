@@ -27,12 +27,12 @@ export const AILegalAssistant: React.FC<AILegalAssistantProps> = ({
   onSelectDocById,
   onQueryAI
 }) => {
-  if (!isOpen) return null;
-
   const [activeTab, setActiveTab] = useState<'SEARCH' | 'CONTRADICTIONS' | 'TIMELINE'>('SEARCH');
   const [query, setQuery] = useState('Find forensic ballistics matching weapon recovered at canal');
   const [isLoading, setIsLoading] = useState(false);
   const [searchResponse, setSearchResponse] = useState<any>(null);
+
+  if (!isOpen) return null;
 
   const sampleQueries = [
     'Find forensic ballistics matching weapon recovered at canal',

@@ -25,6 +25,7 @@ import { DocsViewerModal } from './components/DocsViewerModal';
 import { BlockchainLedgerModal } from './components/BlockchainLedgerModal';
 import { GrantAccessModal } from './components/GrantAccessModal';
 import { OfficerAuthModal } from './components/OfficerAuthModal';
+import { CaseVerificationModal } from './components/CaseVerificationModal';
 import { 
   INITIAL_CASE,
   INITIAL_DOCUMENTS,
@@ -54,7 +55,8 @@ import {
   Download,
   Fingerprint,
   ChevronRight,
-  ExternalLink
+  ExternalLink,
+  Search
 } from 'lucide-react';
 
 export type WorkspaceTab = 'DOCUMENTS' | 'PIPELINE' | 'CERTIFICATES' | 'AI' | 'AUDIT' | 'FORENSIC_3D';
@@ -89,6 +91,7 @@ export const App: React.FC = () => {
   const [isBlockchainModalOpen, setIsBlockchainModalOpen] = useState(false);
   const [isGrantAccessModalOpen, setIsGrantAccessModalOpen] = useState(false);
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
+  const [isCaseVerifyModalOpen, setIsCaseVerifyModalOpen] = useState(false);
 
   // WebSocket connection state
   const [isWsConnected, setIsWsConnected] = useState(true);
@@ -583,192 +586,283 @@ export const App: React.FC = () => {
       {/* Main Content Area */}
       <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-5 space-y-5">
         
-        {/* Institutional Case Header & Quick Actions */}
-        <section className="bg-slate-900/90 border border-slate-800 rounded-2xl p-4 sm:p-5 shadow-lg backdrop-blur-md">
-          <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+        {/* Requirement 9: Clearly label mock data when demo mode is active */}
+        <div className={`w-full rounded-2xl px-4 py-3 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 text-xs border backdrop-blur-md shadow-sm transition-all ${
+          isLiveBackend 
+            ? 'bg-emerald-950/40 border-emerald-500/30 text-emerald-300' 
+            : 'bg-amber-950/40 border-amber-500/30 text-amber-200'
+        }`}>
+          <div className="flex items-center space-x-2.5">
+            <span className={`w-2.5 h-2.5 rounded-full shrink-0 ${isLiveBackend ? 'bg-emerald-400 animate-pulse' : 'bg-amber-400 animate-ping'}`} />
+            <div>
+              <span className="font-bold font-mono tracking-wide">
+                {isLiveBackend ? '🟢 LIVE ENTERPRISE BACKEND' : '🟡 DEMO MODE ACTIVE (STANDALONE WEB PREVIEW)'}
+              </span>
+              <span className="text-slate-400 font-sans ml-2 hidden md:inline">
+                {isLiveBackend 
+                  ? '• Connected to FastAPI Backend on port 8000 • Live WebSockets & PostgreSQL state active' 
+                  : '• Operating with In-Browser FIPS 180-4 SHA-256 Web Crypto Engine & Client-Side Merkle DAG'}
+              </span>
+            </div>
+          </div>
+          <div className="flex items-center space-x-2 text-[11px] font-mono">
+            <span className={`px-2.5 py-0.5 rounded border ${isLiveBackend ? 'bg-emerald-900/40 border-emerald-500/30 text-emerald-300' : 'bg-amber-900/40 border-amber-500/30 text-amber-300'}`}>
+              {isLiveBackend ? 'FastAPI + WSS Live' : 'Mock State Simulated'}
+            </span>
+            <button 
+              onClick={fetchAllData}
+              className="text-slate-400 hover:text-slate-200 underline underline-offset-2 ml-1"
+              title="Ping backend API to check connectivity"
+            >
+              Ping API
+            </button>
+          </div>
+        </div>
+
+        {/* Requirement 1: Prominently Display Active Case Information */}
+        <section className="bg-slate-900/90 border border-slate-800 rounded-2xl p-5 sm:p-6 shadow-xl backdrop-blur-md space-y-4">
+          <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-5">
             
-            {/* Case Details */}
-            <div className="space-y-1.5">
+            {/* Case Identity & Statutory Information */}
+            <div className="space-y-2.5 flex-1">
               <div className="flex flex-wrap items-center gap-2">
-                <span className="px-2.5 py-0.5 rounded-full text-xs font-bold font-mono bg-cyan-950 text-cyan-400 border border-cyan-500/30">
+                <span className="px-3 py-1 rounded-lg text-xs font-bold font-mono bg-cyan-950 text-cyan-400 border border-cyan-500/30 shadow-inner">
                   {caseRecord?.case_id || 'CASE-2026-DEL-402'}
                 </span>
-                <span className="text-xs font-medium text-slate-400 flex items-center gap-1">
-                  <Building className="w-3.5 h-3.5 text-slate-500" />
-                  {caseRecord?.police_station || 'Special Cell, Lodhi Colony'}
-                </span>
-                <span className="text-slate-600">•</span>
-                <span className="text-xs text-slate-400 font-mono">
+                <span className="px-2.5 py-1 rounded-lg text-xs font-mono bg-slate-800 text-slate-300 border border-slate-700">
                   FIR No. {caseRecord?.fir_number || '402/2026'}
                 </span>
+                <span className="px-2.5 py-1 rounded-lg text-xs font-mono bg-indigo-950 text-indigo-300 border border-indigo-500/30">
+                  Stage {caseRecord?.current_stage || 5}: Judicial Presentation
+                </span>
+                <span className="text-xs text-slate-400 flex items-center gap-1.5 font-medium">
+                  <Building className="w-3.5 h-3.5 text-slate-400" />
+                  {caseRecord?.police_station || 'Special Cell, Lodhi Colony'}
+                </span>
               </div>
-              <h1 className="text-lg sm:text-xl font-bold text-slate-100 font-heading tracking-tight">
+
+              <h1 className="text-xl sm:text-2xl font-black text-slate-100 font-heading tracking-tight">
                 State of NCT of Delhi vs. Vikram Malhotra & Ors.
               </h1>
+
               <div className="flex flex-wrap items-center gap-2 text-xs text-slate-400">
-                <span>Jurisdiction: <strong className="text-slate-300">{caseRecord?.jurisdiction || 'Patiala House Courts'}</strong></span>
+                <span>Court: <strong className="text-slate-200">{caseRecord?.court_name || 'Patiala House Courts Complex'}</strong> ({caseRecord?.jurisdiction || 'New Delhi'})</span>
                 <span>•</span>
-                <span className="font-mono text-cyan-400/90">{caseRecord?.acts_sections || 'BNS 103(1), 61(2), Arms Act 25/27'}</span>
+                <span className="font-mono text-cyan-400/90">{caseRecord?.acts_sections || 'IPC 302, 120B / BNS 103(1), 61(2), Arms Act 25/27'}</span>
               </div>
             </div>
 
-            {/* Quick Actions & Eco Status */}
-            <div className="flex flex-wrap items-center gap-2 pt-2 lg:pt-0 border-t lg:border-t-0 border-slate-800">
-              <button
-                onClick={() => setIsUploadModalOpen(true)}
-                className="px-3.5 py-2 bg-cyan-600 hover:bg-cyan-500 text-slate-950 font-bold text-xs rounded-xl transition-all flex items-center space-x-1.5 shadow-md shadow-cyan-600/20"
-                title="Ingest new legal document or forensic exhibit"
-              >
-                <Plus className="w-4 h-4 stroke-[3]" />
-                <span>Ingest Exhibit</span>
-              </button>
-
-              <button
-                onClick={() => {
-                  setActiveTab('CERTIFICATES');
-                  setIsCertModalOpen(true);
-                }}
-                className="px-3.5 py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 font-semibold text-xs rounded-xl border border-slate-700 transition-all flex items-center space-x-1.5"
-                title="Generate Bharatiya Sakshya Adhiniyam certificate"
-              >
-                <FileText className="w-4 h-4 text-emerald-400" />
-                <span>Sec 63 BSA</span>
-              </button>
-
-              <button
-                onClick={() => {
-                  setTamperTargetDoc(documents[2] || documents[0]);
-                  setIsTamperModalOpen(true);
-                }}
-                className="px-3 py-2 bg-red-950/60 hover:bg-red-900/60 text-red-300 font-semibold text-xs rounded-xl border border-red-500/30 transition-all flex items-center space-x-1.5"
-                title="Simulate unauthorized byte tampering"
-              >
-                <AlertTriangle className="w-4 h-4 text-red-400" />
-                <span>Tamper Test</span>
-              </button>
-
-              <button
-                onClick={() => setIsAIModalOpen(true)}
-                className="px-3 py-2 bg-indigo-950/60 hover:bg-indigo-900/60 text-indigo-300 font-semibold text-xs rounded-xl border border-indigo-500/30 transition-all flex items-center space-x-1.5"
-                title="Search evidence & legal contradictions with AI"
-              >
-                <Sparkles className="w-4 h-4 text-indigo-400" />
-                <span>Legal AI</span>
-              </button>
+            {/* Presiding Officers & Judicial Metadata Grid */}
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 bg-slate-950/70 p-3.5 rounded-xl border border-slate-800 text-xs shrink-0 font-mono">
+              <div>
+                <div className="text-[10px] text-slate-500 uppercase tracking-wider">Presiding Magistrate</div>
+                <div className="font-bold text-slate-200 truncate">{caseRecord?.presiding_magistrate || 'Smt. Vandana Jain, ASJ-03'}</div>
+                <div className="text-[10px] text-slate-400">Patiala House Courts</div>
+              </div>
+              <div>
+                <div className="text-[10px] text-slate-500 uppercase tracking-wider">Investigating Officer</div>
+                <div className="font-bold text-cyan-400 truncate">{caseRecord?.io_name || 'Insp. R.K. Varma'}</div>
+                <div className="text-[10px] text-slate-400">Badge: {caseRecord?.io_badge || 'DL-POL-8832'}</div>
+              </div>
+              <div className="col-span-2 sm:col-span-1">
+                <div className="text-[10px] text-slate-500 uppercase tracking-wider">Public Prosecutor</div>
+                <div className="font-bold text-slate-300 truncate">{caseRecord?.prosecutor_name || 'Adv. Alok Trivedi'}</div>
+                <div className="text-[10px] text-slate-400">Directorate of Pros.</div>
+              </div>
             </div>
 
           </div>
 
-          {/* Sustainable Eco-Mode Advisory Ribbon */}
-          <div className="mt-3.5 pt-3 border-t border-slate-800/80 flex flex-wrap items-center justify-between gap-2 text-xs">
-            <div className="flex items-center space-x-2">
-              <span className={`inline-flex items-center px-2 py-0.5 rounded-md text-[11px] font-bold ${
+          {/* Cryptographic Anchor & Eco-Mode Strip */}
+          <div className="pt-3 border-t border-slate-800/80 flex flex-wrap items-center justify-between gap-3 text-xs">
+            <div className="flex items-center space-x-2 text-slate-400 font-mono text-[11px] overflow-hidden">
+              <span className="text-slate-500 shrink-0">Genesis Merkle Root:</span>
+              <span className="text-cyan-400 font-mono bg-slate-950 px-2 py-0.5 rounded border border-slate-800 truncate max-w-[240px] sm:max-w-md">
+                {caseRecord?.merkle_root || '6405ddd6472ba80b4ee6c62aa48e0a37237ae222c10aaff2ae645905725d13c8'}
+              </span>
+            </div>
+
+            <div className="flex items-center space-x-3">
+              <span className={`inline-flex items-center px-2.5 py-0.5 rounded-md text-[11px] font-bold ${
                 isEcoMode 
                   ? 'bg-emerald-950 text-emerald-400 border border-emerald-500/30' 
                   : 'bg-amber-950 text-amber-400 border border-amber-500/30'
               }`}>
                 <Leaf className="w-3 h-3 mr-1" />
-                {isEcoMode ? 'Eco-Mode Active: Low Battery & GPU Usage' : 'High-Performance 3D Mode Active'}
+                {isEcoMode ? 'Eco-Mode Active (Low GPU)' : '3D WebGL Live'}
               </span>
-              <span className="text-slate-400 hidden sm:inline text-[11px]">
-                {isEcoMode 
-                  ? 'WebGL 3D loop paused to eliminate CPU load on low-spec court & station laptops.' 
-                  : 'Continuous Three.js GPU rendering enabled.'}
-              </span>
+              <button
+                onClick={() => setIsEcoMode(!isEcoMode)}
+                className="text-[11px] font-semibold text-cyan-400 hover:text-cyan-300 underline underline-offset-2"
+              >
+                {isEcoMode ? 'Enable 3D Visualizer' : 'Switch to Low-GPU Eco Mode'}
+              </button>
             </div>
-            <button
-              onClick={() => setIsEcoMode(!isEcoMode)}
-              className="text-[11px] font-semibold text-cyan-400 hover:text-cyan-300 underline underline-offset-2 transition-colors"
-            >
-              {isEcoMode ? 'Switch to 3D Mode' : 'Switch to Eco-Mode'}
-            </button>
           </div>
         </section>
 
-        {/* Executive Telemetry Strip (4 Accessible Cards) */}
+        {/* Requirement 3: Four Primary Actions */}
+        <section className="bg-slate-900/90 border border-slate-800 rounded-2xl p-4 sm:p-5 shadow-lg backdrop-blur-md">
+          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+            <div>
+              <h2 className="text-xs font-mono uppercase tracking-wider text-slate-400 font-bold">
+                Case Command Center Actions
+              </h2>
+              <p className="text-xs text-slate-300">
+                Execute primary evidentiary operations with instant cryptographic verification.
+              </p>
+            </div>
+
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
+              {/* Action 1: Search Evidence */}
+              <button
+                onClick={() => setIsAIModalOpen(true)}
+                className="px-3.5 py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs rounded-xl border border-indigo-400/30 transition-all flex items-center justify-center space-x-2 shadow-md shadow-indigo-600/20 active:scale-95"
+                title="Search exhibits, witness testimonies and contradictions with Legal AI"
+              >
+                <Search className="w-4 h-4 text-indigo-200" />
+                <span>Search Evidence</span>
+              </button>
+
+              {/* Action 2: Upload Document */}
+              <button
+                onClick={() => setIsUploadModalOpen(true)}
+                className="px-3.5 py-2.5 bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-bold text-xs rounded-xl transition-all flex items-center justify-center space-x-2 shadow-md shadow-cyan-500/25 active:scale-95"
+                title="Ingest new evidentiary record or forensic file"
+              >
+                <Plus className="w-4 h-4 stroke-[3]" />
+                <span>Upload Document</span>
+              </button>
+
+              {/* Action 3: Verify Case */}
+              <button
+                onClick={() => setIsCaseVerifyModalOpen(true)}
+                className="px-3.5 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs rounded-xl border border-emerald-400/30 transition-all flex items-center justify-center space-x-2 shadow-md shadow-emerald-600/20 active:scale-95"
+                title="Run real-time cryptographic audit across all case exhibits"
+              >
+                <ShieldCheck className="w-4 h-4 text-emerald-200" />
+                <span>Verify Case</span>
+              </button>
+
+              {/* Action 4: Generate Certificate */}
+              <button
+                onClick={() => {
+                  setActiveTab('CERTIFICATES');
+                  setIsCertModalOpen(true);
+                }}
+                className="px-3.5 py-2.5 bg-amber-600 hover:bg-amber-500 text-white font-bold text-xs rounded-xl border border-amber-400/30 transition-all flex items-center justify-center space-x-2 shadow-md shadow-amber-600/20 active:scale-95"
+                title="Generate Bharatiya Sakshya Adhiniyam Section 63 electronic certificate"
+              >
+                <FileText className="w-4 h-4 text-amber-200" />
+                <span>Generate Certificate</span>
+              </button>
+            </div>
+          </div>
+        </section>
+
+        {/* Requirement 2: Show Total Documents, Verified Documents, Pending Actions, Security Alerts */}
         <section className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
           
           {/* Card 1: Total Documents */}
           <div 
             onClick={() => setActiveTab('DOCUMENTS')}
-            className="glass-panel p-3.5 sm:p-4 rounded-2xl flex items-center justify-between border-slate-800/80 hover:border-cyan-500/40 cursor-pointer transition-all hover:bg-slate-900/60"
+            className="glass-panel p-4 rounded-2xl flex items-center justify-between border-slate-800 hover:border-cyan-500/50 cursor-pointer transition-all hover:bg-slate-900/80 group"
           >
             <div className="space-y-1">
               <div className="text-[11px] font-mono uppercase tracking-wider text-slate-400">Total Documents</div>
               <div className="flex items-center space-x-2">
-                <span className="text-xl sm:text-2xl font-black font-mono text-cyan-400">{documents.length}</span>
-                <span className="text-xs text-slate-400 font-sans">Ingested & Encrypted</span>
+                <span className="text-2xl sm:text-3xl font-black font-mono text-cyan-400">{documents.length}</span>
+                <span className="text-xs text-slate-300 font-sans">Ingested</span>
               </div>
               <div className="text-[10px] text-cyan-400/80 font-mono">FIPS 140-3 AES-256-GCM</div>
             </div>
-            <div className="w-10 h-10 rounded-xl bg-cyan-950/60 text-cyan-400 border border-cyan-500/20 flex items-center justify-center">
+            <div className="w-11 h-11 rounded-xl bg-cyan-950/80 text-cyan-400 border border-cyan-500/20 flex items-center justify-center group-hover:scale-105 transition-transform">
               <FileText className="w-5 h-5" />
             </div>
           </div>
 
-          {/* Card 2: Pending Approvals */}
+          {/* Card 2: Verified Documents */}
           <div 
-            onClick={() => setActiveTab('PIPELINE')}
-            className="glass-panel p-3.5 sm:p-4 rounded-2xl flex items-center justify-between border-slate-800/80 hover:border-amber-500/40 cursor-pointer transition-all hover:bg-slate-900/60"
+            onClick={() => setIsCaseVerifyModalOpen(true)}
+            className="glass-panel p-4 rounded-2xl flex items-center justify-between border-slate-800 hover:border-emerald-500/50 cursor-pointer transition-all hover:bg-slate-900/80 group"
           >
             <div className="space-y-1">
-              <div className="text-[11px] font-mono uppercase tracking-wider text-slate-400">Pending Approvals</div>
+              <div className="text-[11px] font-mono uppercase tracking-wider text-slate-400">Verified Documents</div>
               <div className="flex items-center space-x-2">
-                <span className="text-xl sm:text-2xl font-black font-mono text-amber-400">2</span>
-                <span className="text-xs text-slate-400 font-sans">Awaiting Sign-off</span>
+                <span className="text-2xl sm:text-3xl font-black font-mono text-emerald-400">
+                  {documents.filter(d => !d.tamper_flag && d.status === 'VERIFIED').length}
+                </span>
+                <span className="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-emerald-950 text-emerald-300 border border-emerald-500/30">
+                  {caseRecord?.integrity_score || 100}% PASS
+                </span>
               </div>
-              <div className="text-[10px] text-amber-400/80 font-mono">SHO & Judicial Review</div>
+              <div className="text-[10px] text-emerald-400/80 font-mono">FIPS 180-4 SHA-256 Valid</div>
             </div>
-            <div className="w-10 h-10 rounded-xl bg-amber-950/60 text-amber-400 border border-amber-500/20 flex items-center justify-center">
-              <Clock className="w-5 h-5" />
+            <div className="w-11 h-11 rounded-xl bg-emerald-950/80 text-emerald-400 border border-emerald-500/20 flex items-center justify-center group-hover:scale-105 transition-transform">
+              <ShieldCheck className="w-5 h-5" />
             </div>
           </div>
 
-          {/* Card 3: Chain Integrity Status */}
+          {/* Card 3: Pending Actions */}
           <div 
-            onClick={() => setActiveTab('AUDIT')}
-            className="glass-panel p-3.5 sm:p-4 rounded-2xl flex items-center justify-between border-slate-800/80 hover:border-emerald-500/40 cursor-pointer transition-all hover:bg-slate-900/60"
+            onClick={() => setActiveTab('PIPELINE')}
+            className="glass-panel p-4 rounded-2xl flex items-center justify-between border-slate-800 hover:border-amber-500/50 cursor-pointer transition-all hover:bg-slate-900/80 group"
           >
             <div className="space-y-1">
-              <div className="text-[11px] font-mono uppercase tracking-wider text-slate-400">Chain Integrity Status</div>
+              <div className="text-[11px] font-mono uppercase tracking-wider text-slate-400">Pending Actions</div>
               <div className="flex items-center space-x-2">
-                <span className={`text-xl sm:text-2xl font-black font-mono ${hasTamperAlert ? 'text-red-400' : 'text-emerald-400'}`}>
-                  {caseRecord?.integrity_score || 100}%
-                </span>
-                <span className={`px-2 py-0.5 rounded text-[10px] font-mono font-bold ${
-                  hasTamperAlert ? 'bg-red-950 text-red-300 border border-red-500/40 animate-pulse' : 'bg-emerald-950 text-emerald-300 border border-emerald-500/40'
-                }`}>
-                  {hasTamperAlert ? 'COMPROMISED' : 'SYNCHRONIZED'}
-                </span>
+                <span className="text-2xl sm:text-3xl font-black font-mono text-amber-400">2</span>
+                <span className="text-xs text-slate-300 font-sans">Awaiting Sign-off</span>
               </div>
-              <div className="text-[10px] text-slate-400 font-mono">Polygon Block #18,421,006</div>
+              <div className="text-[10px] text-amber-400/80 font-mono">Chargesheet & FSL Review</div>
             </div>
-            <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${hasTamperAlert ? 'bg-red-900/40 text-red-400' : 'bg-emerald-900/40 text-emerald-400'}`}>
-              <ShieldCheck className="w-5 h-5" />
+            <div className="w-11 h-11 rounded-xl bg-amber-950/80 text-amber-400 border border-amber-500/20 flex items-center justify-center group-hover:scale-105 transition-transform">
+              <Clock className="w-5 h-5" />
             </div>
           </div>
 
           {/* Card 4: Security Alerts */}
           <div 
-            onClick={() => setActiveTab('AUDIT')}
-            className="glass-panel p-3.5 sm:p-4 rounded-2xl flex items-center justify-between border-slate-800/80 hover:border-red-500/40 cursor-pointer transition-all hover:bg-slate-900/60"
+            onClick={() => {
+              if (hasTamperAlert) {
+                setIsCaseVerifyModalOpen(true);
+              } else {
+                setActiveTab('AUDIT');
+              }
+            }}
+            className={`glass-panel p-4 rounded-2xl flex items-center justify-between border cursor-pointer transition-all hover:bg-slate-900/80 group ${
+              hasTamperAlert ? 'border-red-500/50 bg-red-950/20' : 'border-slate-800 hover:border-slate-700'
+            }`}
           >
             <div className="space-y-1">
               <div className="text-[11px] font-mono uppercase tracking-wider text-slate-400">Security Alerts</div>
               <div className="flex items-center space-x-2">
-                <span className={`text-xl sm:text-2xl font-black font-mono ${hasTamperAlert ? 'text-red-400' : 'text-slate-200'}`}>
+                <span className={`text-2xl sm:text-3xl font-black font-mono ${hasTamperAlert ? 'text-red-400 animate-pulse' : 'text-slate-200'}`}>
                   {caseRecord?.quarantine_count || 0}
                 </span>
-                <span className="text-xs text-slate-400 font-sans">
-                  {hasTamperAlert ? 'Active Quarantines' : 'Active Threats: 0'}
+                <span className="text-xs text-slate-300 font-sans">
+                  {hasTamperAlert ? 'Quarantine Active' : 'Zero Threats'}
                 </span>
               </div>
-              <div className="text-[10px] text-slate-400 font-mono">Zero-Trust Sentinel Active</div>
+              <div className={`text-[10px] font-mono ${hasTamperAlert ? 'text-red-400' : 'text-slate-400'}`}>
+                {hasTamperAlert ? 'Tamper Sentinel Triggered' : 'Zero-Trust Sentinel Armed'}
+              </div>
             </div>
-            <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${hasTamperAlert ? 'bg-red-900/60 text-red-400 border border-red-500/40' : 'bg-slate-900/60 text-slate-400 border border-slate-700/40'}`}>
+            <div className={`w-11 h-11 rounded-xl flex items-center justify-center group-hover:scale-105 transition-transform ${
+              hasTamperAlert ? 'bg-red-900/60 text-red-400 border border-red-500/40' : 'bg-slate-900/60 text-slate-400 border border-slate-700/40'
+            }`}>
               <AlertTriangle className="w-5 h-5" />
             </div>
           </div>
+        </section>
+
+        {/* Requirement 4: Preserved 6-Stage Custody Lifecycle Stepper */}
+        <section className="bg-slate-900/80 border border-slate-800 rounded-2xl p-4 sm:p-5 shadow-lg space-y-3">
+          <LifecyclePipeline
+            activeStage={activeStage}
+            onSelectStage={setActiveStage}
+            documents={documents}
+          />
         </section>
 
         {/* Sustainable Workspace Navigation Tabs */}
@@ -947,35 +1041,121 @@ export const App: React.FC = () => {
                   </div>
                 </div>
 
-                {/* Live Audit Activity Summary */}
-                <div className="p-4 rounded-2xl bg-slate-900/90 border border-slate-800 space-y-3">
+                {/* Requirement 5: Prominent Recent Activity Section */}
+                <div className="p-4 sm:p-5 rounded-2xl bg-slate-900/90 border border-slate-800 space-y-3.5 shadow-lg">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center space-x-2">
                       <History className="w-4 h-4 text-cyan-400" />
-                      <span className="text-xs font-bold text-slate-200">Recent Ledger Activity</span>
+                      <span className="text-xs font-bold text-slate-100 font-heading">Recent Activity & Audit Feed</span>
                     </div>
-                    <button
-                      onClick={() => setActiveTab('AUDIT')}
-                      className="text-xs text-cyan-400 hover:text-cyan-300 flex items-center space-x-1"
-                    >
-                      <span>Full Trail</span>
-                      <ChevronRight className="w-3.5 h-3.5" />
-                    </button>
+                    <div className="flex items-center space-x-2">
+                      <button
+                        onClick={() => setIsBlockchainModalOpen(true)}
+                        className="text-[11px] text-cyan-400 hover:text-cyan-300 font-mono underline"
+                        title="Open Polygon Blockchain Explorer"
+                      >
+                        Ledger
+                      </button>
+                      <span className="text-slate-600">•</span>
+                      <button
+                        onClick={() => setActiveTab('AUDIT')}
+                        className="text-[11px] text-slate-400 hover:text-slate-200 flex items-center space-x-0.5"
+                        title="View complete immutable audit trail"
+                      >
+                        <span>Full Trail</span>
+                        <ChevronRight className="w-3 h-3" />
+                      </button>
+                    </div>
                   </div>
+
                   <div className="space-y-2">
-                    {auditBlocks.slice(0, 3).map((block) => (
-                      <div key={block.block_id} className="p-2.5 rounded-xl bg-slate-950/60 border border-slate-800/80 text-xs space-y-1">
-                        <div className="flex items-center justify-between text-[11px]">
-                          <span className="font-mono text-cyan-400 font-bold">{block.block_id}</span>
-                          <span className="text-slate-500 font-mono">{block.timestamp_utc.slice(11, 19)} UTC</span>
+                    {auditBlocks.slice(0, 4).map((block) => {
+                      const isTamper = block.action.includes('TAMPER') || block.action.includes('ALERT');
+                      const isIngest = block.action.includes('UPLOAD') || block.action.includes('INGEST');
+                      const isCourt = block.action.includes('COURT') || block.action.includes('BSA');
+                      const isHeartbeat = block.action.includes('HEARTBEAT') || block.action.includes('PERIODIC');
+
+                      return (
+                        <div key={block.block_id} className="p-2.5 rounded-xl bg-slate-950/70 border border-slate-800/80 text-xs space-y-1.5 transition-all hover:border-slate-700">
+                          <div className="flex items-center justify-between text-[11px]">
+                            <span className="font-mono text-cyan-400 font-bold">{block.block_id}</span>
+                            <span className={`px-1.5 py-0.2 rounded text-[9px] font-mono font-bold ${
+                              isTamper 
+                                ? 'bg-red-950 text-red-300 border border-red-500/30'
+                                : isCourt 
+                                ? 'bg-indigo-950 text-indigo-300 border border-indigo-500/30'
+                                : isIngest
+                                ? 'bg-emerald-950 text-emerald-300 border border-emerald-500/30'
+                                : isHeartbeat
+                                ? 'bg-amber-950 text-amber-300 border border-amber-500/30'
+                                : 'bg-slate-900 text-slate-300 border border-slate-700'
+                            }`}>
+                              {block.action}
+                            </span>
+                          </div>
+                          <p className="text-slate-300 text-[11px] line-clamp-1">{block.details}</p>
+                          <div className="flex items-center justify-between text-[10px] text-slate-500 font-mono pt-0.5 border-t border-slate-900">
+                            <span className="text-slate-400 truncate max-w-[130px]">{block.actor_name}</span>
+                            <span>{block.timestamp_utc.slice(11, 19)} UTC</span>
+                          </div>
                         </div>
-                        <p className="text-slate-300 text-[11px] line-clamp-1">{block.details}</p>
-                        <div className="flex items-center justify-between text-[10px] text-slate-400 font-mono pt-1">
-                          <span>{block.actor_name}</span>
-                          <span className="text-emerald-400">Verified</span>
-                        </div>
-                      </div>
-                    ))}
+                      );
+                    })}
+                  </div>
+                </div>
+
+                {/* Secondary Security & Forensic Tools Navigation */}
+                <div className="p-4 rounded-2xl bg-slate-900/90 border border-slate-800 space-y-3">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-mono uppercase tracking-wider text-slate-400 font-semibold">
+                      Secondary Security Controls
+                    </span>
+                    <span className="text-[10px] text-cyan-400 font-mono">FIPS 140-3</span>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-2 text-xs">
+                    <button
+                      onClick={() => {
+                        setTamperTargetDoc(documents[2] || documents[0]);
+                        setIsTamperModalOpen(true);
+                      }}
+                      className="p-2.5 rounded-xl bg-red-950/30 hover:bg-red-900/40 border border-red-500/20 text-red-300 flex flex-col items-start gap-1 transition-all"
+                      title="Simulate bit-level tamper attack"
+                    >
+                      <AlertTriangle className="w-4 h-4 text-red-400" />
+                      <span className="font-bold text-[11px]">Tamper Simulator</span>
+                      <span className="text-[9px] text-slate-400">Zero-Trust Audit</span>
+                    </button>
+
+                    <button
+                      onClick={() => setMerkleProofDoc(documents[0])}
+                      className="p-2.5 rounded-xl bg-slate-950 hover:bg-slate-800/80 border border-slate-800 text-slate-300 flex flex-col items-start gap-1 transition-all"
+                      title="Inspect cryptographic Merkle inclusion proofs"
+                    >
+                      <GitCommit className="w-4 h-4 text-cyan-400" />
+                      <span className="font-bold text-[11px]">Merkle Tree DAG</span>
+                      <span className="text-[9px] text-slate-400">Leaf Proofs</span>
+                    </button>
+
+                    <button
+                      onClick={() => setIsGrantAccessModalOpen(true)}
+                      className="p-2.5 rounded-xl bg-slate-950 hover:bg-slate-800/80 border border-slate-800 text-slate-300 flex flex-col items-start gap-1 transition-all"
+                      title="Delegate time-bound access under Rule 8.2"
+                    >
+                      <Clock className="w-4 h-4 text-amber-400" />
+                      <span className="font-bold text-[11px]">Timed Access</span>
+                      <span className="text-[9px] text-slate-400">Rule 8.2 Delegation</span>
+                    </button>
+
+                    <button
+                      onClick={() => setIsDocsModalOpen(true)}
+                      className="p-2.5 rounded-xl bg-slate-950 hover:bg-slate-800/80 border border-slate-800 text-slate-300 flex flex-col items-start gap-1 transition-all"
+                      title="View complete system architecture specifications"
+                    >
+                      <FileText className="w-4 h-4 text-emerald-400" />
+                      <span className="font-bold text-[11px]">System Docs</span>
+                      <span className="text-[9px] text-slate-400">8 Specs Chapters</span>
+                    </button>
                   </div>
                 </div>
 
@@ -1482,6 +1662,16 @@ export const App: React.FC = () => {
         onClose={() => setIsAuthModalOpen(false)}
         currentRole={currentRole}
         onSelectRole={(newRole) => setCurrentRole(newRole)}
+      />
+
+      {/* 11. Case Verification Consensus Audit Modal */}
+      <CaseVerificationModal
+        isOpen={isCaseVerifyModalOpen}
+        onClose={() => setIsCaseVerifyModalOpen(false)}
+        caseRecord={caseRecord}
+        documents={documents}
+        onRestoreAll={handleRestoreAll}
+        isLiveBackend={isLiveBackend}
       />
 
     </div>

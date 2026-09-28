@@ -25,16 +25,16 @@ export const TamperAttackModal: React.FC<TamperAttackModalProps> = ({
   onExecuteTamper,
   onRestoreDoc
 }) => {
-  if (!isOpen) return null;
-
   const initialDoc = selectedDoc || documents.find(d => d.id === 'DOC-STG2-003') || documents[0];
-  const [targetDocId, setTargetDocId] = useState<string>(initialDoc.id);
+  const [targetDocId, setTargetDocId] = useState<string>(initialDoc?.id || '');
   const [byteOffset, setByteOffset] = useState<number>(140);
   const [maliciousPayload, setMaliciousPayload] = useState<string>(
     '[MALICIOUS_TAMPER_INJECTION: WEAPON SERIAL ALTERED FROM W-9041 TO W-0000]'
   );
   const [isExecuting, setIsExecuting] = useState(false);
   const [attackResult, setAttackResult] = useState<any>(null);
+
+  if (!isOpen) return null;
 
   const activeDoc = documents.find(d => d.id === targetDocId) || initialDoc;
   const isAlreadyTampered = activeDoc.status === 'TAMPERED' || activeDoc.status === 'QUARANTINED';

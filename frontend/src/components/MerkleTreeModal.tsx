@@ -22,12 +22,11 @@ export const MerkleTreeModal: React.FC<MerkleTreeModalProps> = ({
   onClose,
   onFetchProof
 }) => {
-  if (!isOpen || !document) return null;
-
   const [proofData, setProofData] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
+    if (!isOpen || !document) return;
     let mounted = true;
     setIsLoading(true);
     onFetchProof(document.id)
@@ -44,7 +43,9 @@ export const MerkleTreeModal: React.FC<MerkleTreeModalProps> = ({
     return () => {
       mounted = false;
     };
-  }, [document.id]);
+  }, [document, isOpen, onFetchProof]);
+
+  if (!isOpen || !document) return null;
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6 bg-black/85 backdrop-blur-md overflow-y-auto">

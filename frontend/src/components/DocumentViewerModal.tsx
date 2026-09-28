@@ -30,9 +30,9 @@ export const DocumentViewerModal: React.FC<DocumentViewerModalProps> = ({
   onSimulateTamper,
   onRestoreDoc
 }) => {
-  if (!document) return null;
-
   const [activeTab, setActiveTab] = useState<'DOCUMENT' | 'CRYPTO' | 'WATERMARK'>('DOCUMENT');
+
+  if (!document) return null;
   const roleInfo = USER_ROLES[currentRole];
   const isTampered = document.status === 'TAMPERED' || document.status === 'QUARANTINED';
   const isRedacted = document.status === 'REDACTED';

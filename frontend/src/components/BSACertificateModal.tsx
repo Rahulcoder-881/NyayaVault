@@ -25,12 +25,12 @@ export const BSACertificateModal: React.FC<BSACertificateModalProps> = ({
   certificateData,
   onGenerate
 }) => {
-  if (!isOpen) return null;
-
   const [officerName, setOfficerName] = useState('Insp. R.K. Varma');
   const [designation, setDesignation] = useState('Chief Investigating Officer, Special Cell');
   const [badgeId, setBadgeId] = useState('DL-POL-8832');
   const [isGenerating, setIsGenerating] = useState(false);
+
+  if (!isOpen) return null;
 
   const handleGenerateCertificate = async () => {
     setIsGenerating(true);

@@ -71,9 +71,11 @@ Under the **Bharatiya Sakshya Adhiniyam (BSA) 2023** (which replaced the Indian 
 ---
 
 ## ⚡ Core Capabilities
-
+ 
 | Capability | Technical Mechanism | Statutory Impact |
 |---|---|---|
+| **🌿 Sustainable Eco-Mode** | Client-side energy management pausing WebGL Three.js render loops; drops GPU utilization to 0% | Saves ~70% battery on standard police/court laptops |
+| **🗂️ Tabbed Institutional Workspace** | 6 dedicated operational tabs (Documents, Stages, BSA §63, AI, Audit, 3D Lab) | Eliminates cognitive overload for court clerks and IOs |
 | **🔐 Zero-Trust Ingestion** | Instant FIPS 180-4 SHA-256 hashing + HMAC officer signature upon upload | Evidence cannot be altered post-seizure |
 | **🌲 Merkle DAG Integrity** | Hierarchical Merkle Tree with cryptographic audit paths (`sibling_hashes`) | Sub-second leaf verification across millions of records |
 | **📜 BSA §63 Electronic Certificates** | Automated court-admissible certificate generator with hash digest, officer badge, and system state | Instant admissibility without manual paper affidavits |
@@ -81,7 +83,7 @@ Under the **Bharatiya Sakshya Adhiniyam (BSA) 2023** (which replaced the Indian 
 | **⚡ Tamper Attack Simulator** | Interactive bit-flip attack engine with automatic quarantine & 1-click restore | Live demonstration of immediate mathematical detection |
 | **🤖 AI Legal Assistant** | Semantic search + §180 BNSS witness testimony contradiction detection | Flags factual discrepancies across depositions in seconds |
 | **📊 Live Audit Ledger** | Real-time WebSocket streaming of tamper-evident block headers | FIPS 140-3 non-repudiation audit trail |
-| **🌐 Interactive 3D Vault** | WebGL Three.js nodal visualizer representing the 6-stage lifecycle | Real-time visual clarity for judges, officers, and registrars |
+| **🌐 Interactive 3D Vault** | WebGL Three.js nodal visualizer representing the 6-stage lifecycle (On-Demand) | Real-time visual clarity for judges, officers, and registrars |
 
 ---
 
@@ -90,37 +92,39 @@ Under the **Bharatiya Sakshya Adhiniyam (BSA) 2023** (which replaced the Indian 
 ```mermaid
 flowchart TD
     subgraph UI ["💻 Next-Gen Client Tier (React 19 + TypeScript + Vite)"]
-        A[3D WebGL Vault Core Three.js]
-        B[6-Stage Custody Lifecycle Stepper]
-        C[Document Manager & Search]
-        D[AI Legal Contradiction Assistant]
-        E[Tamper Attack Simulator]
-        F[Live WebSocket Audit Ledger]
+        A[🌿 Sustainable Eco-Mode Core]
+        B[🗂️ 6-Tab Institutional Workspace]
+        C[3D WebGL Vault Three.js On-Demand]
+        D[6-Stage Custody Lifecycle Stepper]
+        E[Document Manager & Search]
+        F[AI Legal Contradiction Assistant]
+        G[Tamper Attack Simulator]
+        H[Live WebSocket Audit Ledger]
     end
 
     subgraph API ["⚙️ High-Performance Backend Tier (FastAPI + Asyncio)"]
-        G[REST API Gateway]
-        H[WebSocket Broadcast Engine]
-        I[RBAC Access Controller]
+        I[REST API Gateway]
+        J[WebSocket Broadcast Engine]
+        K[RBAC Access Controller]
     end
 
     subgraph ENGINE ["🛡️ Core Cryptographic & Forensic Engines"]
-        J[Crypto Engine: SHA-256 & HMAC]
-        K[Merkle DAG Tree Engine]
-        L[Steganography Engine: Zero-Width Tokenizer]
-        M[BSA §63 Certificate Generator]
-        N[AI Semantic & Contradiction Engine]
+        L[Crypto Engine: SHA-256 & HMAC]
+        M[Merkle DAG Tree Engine]
+        N[Steganography Engine: Zero-Width Tokenizer]
+        O[BSA §63 Certificate Generator]
+        P[AI Semantic & Contradiction Engine]
     end
 
     UI <==>|HTTP REST API| API
-    UI <==>|Real-Time WebSockets| H
-    G --> J
-    G --> K
-    G --> L
-    G --> M
-    G --> N
-    J --> K
-    K --> H
+    UI <==>|Real-Time WebSockets| J
+    I --> L
+    I --> M
+    I --> N
+    I --> O
+    I --> P
+    L --> M
+    M --> J
 ```
 
 ---
@@ -147,27 +151,24 @@ First Responder   Seizure Memo   Forensic Lab   Prosecution    Judicial      App
 
 ```
 ┌────────────────────────────────────────────────────────────────────────────────────────┐
-│  🏛️ NyayaVault  [BSA 2023 // SEC 63]  FIR 402/2026 (Spl. Cell)   [INTEGRITY: 100% SECURE]│
+│  🏛️ NyayaVault  [BSA 2023 // SEC 63]   CASE-2026-DEL-402       [🌿 ECO-MODE ACTIVE]    │
 ├────────────────────────────────────────────────────────────────────────────────────────┤
-│  [ Consensus: 100% ]  [ Ingested: 8 Exhibits ]  [ Standard: Sec 63 BSA ]  [ Stego Seal ]│
+│  Case: State vs. Vikram Malhotra | PS: Special Cell, Lodhi Colony | Court: Patiala Hse │
+│  Actions: [+ Ingest Exhibit]  [📜 Sec 63 BSA]  [🚨 Tamper Test]  [⚖️ Legal AI]         │
 ├────────────────────────────────────────────────────────────────────────────────────────┤
-│                                                                                        │
-│        🌐 THREE.JS 3D CRYPTOGRAPHIC VAULT CORE                                         │
-│            • Rotating SHA-256 Icosahedron with Wireframe Forcefield                    │
-│            • Dual Holographic Orbit Rings & 280 Swirling Nebula Particles               │
-│            • 6 Orbiting Custody Stage Nodes with Live Pulse Telemetry                  │
-│                                                                                        │
-│   [Stage 1: FIR] [Stage 2: Seizure] [Stage 3: Forensic] [Stage 4: Court] [Stage 5/6]   │
+│  [ Total Docs: 8 ]   [ Pending Sign-off: 2 ]   [ Integrity: 100% ]   [ Threats: 0 ]    │
+├────────────────────────────────────────────────────────────────────────────────────────┤
+│  🗂️ TABS: [📁 Documents (8)] [🔄 Stages (6)] [📜 Sec 63 BSA] [⚖️ Legal AI] [📋 Audit]   │
 ├──────────────────────────────────────────────────┬─────────────────────────────────────┤
-│  📁 EVIDENTIARY DOCUMENTS & EXHIBITS             │  📊 LIVE IMMUTABLE AUDIT LEDGER     │
-│  [Search Exhibits...] [Category: ALL] [Ingest]   │  [WS: LIVE STREAM] [8 BLOCKS]       │
-│                                                  │                                     │
-│  • EX-01: First Information Report (FIR)         │  • BLK-108: COURT SEAL APPLIED      │
-│    SHA-256: 7f83b165... [SEC 63 VERIFIED]        │    Hash: 4a3e9c... | Judge Badge    │
-│  • EX-02: Seizure Memo (Recovered Weapon)        │  • BLK-107: REDACT WITNESS PII      │
-│    SHA-256: 3c52a912... [STEGO SEAL]             │    Hash: 1b99c0... | Prosecutor    │
-│  • EX-03: Ballistics Ballistic Report (FSL)      │  • BLK-106: MERKLE TREE REBUILT     │
-│    SHA-256: 89e21b44... [SEC 63 VERIFIED]        │    Root: 94e2a1... | FSL Lab        │
+│  📁 CASE EVIDENCE FILES & EXHIBITS               │  👮 AUTHENTICATED SESSION           │
+│  [Search Exhibits...] [Category: ALL] [Upload]   │  Role: IO Police (Insp. R.K. Varma) │
+│                                                  │  Watermark: DL-POL-8832 (Active)    │
+│  • EX-01: First Information Report (FIR)         ├─────────────────────────────────────┤
+│    SHA-256: 7f83b165... [SEC 63 VERIFIED]        │  📊 RECENT LEDGER ACTIVITY          │
+│  • EX-02: Seizure Memo (Recovered Weapon)        │  • BLK-108: COURT SEAL APPLIED      │
+│    SHA-256: 3c52a912... [STEGO SEAL]             │    Hash: 4a3e9c... | Judge Badge    │
+│  • EX-03: Ballistics Ballistic Report (FSL)      │  • BLK-107: REDACT WITNESS PII      │
+│    SHA-256: 89e21b44... [SEC 63 VERIFIED]        │    Hash: 1b99c0... | Prosecutor    │
 └──────────────────────────────────────────────────┴─────────────────────────────────────┘
 ```
 

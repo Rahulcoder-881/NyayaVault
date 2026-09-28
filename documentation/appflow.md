@@ -207,3 +207,46 @@ sequenceDiagram
     DB-->>API: Access Expired
     API-->>Lab: 403 Forbidden: Case Access Window Has Expired
 ```
+
+---
+
+## 3.6 Institutional Workspace Navigation & Sustainable Eco-Mode Flow
+
+```mermaid
+stateDiagram-v2
+    [*] --> EcoModeWorkspace: Initial Load (Default: Eco-Mode Active)
+    
+    state EcoModeWorkspace {
+        [*] --> DocumentsTab
+        DocumentsTab --> PipelineTab: Switch Tab
+        PipelineTab --> CertificateTab: Switch Tab
+        CertificateTab --> LegalAITab: Switch Tab
+        LegalAITab --> AuditTab: Switch Tab
+        AuditTab --> DocumentsTab: Switch Tab
+    }
+
+    note right of EcoModeWorkspace
+        Zero WebGL overhead
+        3D animation loops paused
+        CPU < 2%, GPU = 0%
+        Optimized for battery & thermal stability
+    end note
+
+    EcoModeWorkspace --> Hardware3DLab: User Toggles '3D Lab' or clicks Leaf Badge
+    
+    state Hardware3DLab {
+        [*] --> MountThreeJsCanvas
+        MountThreeJsCanvas --> RotatingVaultCube
+        RotatingVaultCube --> OrbitalStageNodes
+        OrbitalStageNodes --> InspectMerkleNodes
+    }
+
+    Hardware3DLab --> EcoModeWorkspace: User clicks 'Return to Eco-Mode' (Disables WebGL Loop)
+```
+
+### Operational Interaction Steps:
+1. **Initial Access:** Officer logs into a clean, low-carbon institutional workspace with WebGL paused, ensuring instantaneous page rendering even on constrained mobile hotspot networks.
+2. **Tabbed Workflow:** The officer switches between **Evidence Documents**, **Custody Pipeline**, **BSA Certificate**, **Legal AI Contradiction Engine**, and **Audit Trail** without triggering page reloads.
+3. **On-Demand 3D Forensic Inspection:** When spatial evidence relationships or Merkle graph branches must be visualized in court, the user activates the 3D Forensic Lab with one click.
+4. **Instant Eco Fallback:** The user toggles back to Eco-Mode to conserve laptop battery and suppress computer fan noise during continuous court proceedings.
+

@@ -30,7 +30,7 @@ export const DocumentViewerModal: React.FC<DocumentViewerModalProps> = ({
   onSimulateTamper,
   onRestoreDoc
 }) => {
-  const [activeTab, setActiveTab] = useState<'DOCUMENT' | 'CRYPTO' | 'WATERMARK'>('DOCUMENT');
+  const [activeTab, setActiveTab] = useState<'PREVIEW' | 'VERIFICATION' | 'TECHNICAL'>('PREVIEW');
 
   if (!document) return null;
   const roleInfo = USER_ROLES[currentRole];
@@ -48,6 +48,12 @@ export const DocumentViewerModal: React.FC<DocumentViewerModalProps> = ({
     : document.content;
 
   const handlePrint = () => {
+    // Restrict printing to the preview tab and enforce redaction rules.
+    if (activeTab !== 'PREVIEW') return;
+    if (isRedacted && currentRole !== 'JUDGE_MAGISTRATE') {
+      alert('Printing is prohibited for redacted documents unless you have judicial privileges.');
+      return;
+    }
     window.print();
   };
 
@@ -97,41 +103,47 @@ export const DocumentViewerModal: React.FC<DocumentViewerModalProps> = ({
         </div>
 
         {/* Tab Selector */}
-        <div className="flex items-center space-x-2 px-5 pt-3 border-b border-slate-800/80 bg-slate-950/40 text-xs font-mono">
+        <div role="tablist" className="flex items-center space-x-2 px-5 pt-3 border-b border-slate-800/80 bg-slate-950/40 text-xs font-mono">
           <button
-            onClick={() => setActiveTab('DOCUMENT')}
+            role="tab"
+            aria-selected={activeTab === 'PREVIEW'}
+            onClick={() => setActiveTab('PREVIEW')}
             className={`pb-2.5 px-3 font-semibold transition-all border-b-2 flex items-center space-x-1.5 ${
-              activeTab === 'DOCUMENT'
+              activeTab === 'PREVIEW'
                 ? 'border-cyan-400 text-cyan-300'
                 : 'border-transparent text-slate-400 hover:text-slate-200'
             }`}
           >
             <FileText className="w-3.5 h-3.5" />
-            <span>Forensic Document Text</span>
+            <span>Document Preview</span>
           </button>
 
           <button
-            onClick={() => setActiveTab('CRYPTO')}
+            role="tab"
+            aria-selected={activeTab === 'VERIFICATION'}
+            onClick={() => setActiveTab('VERIFICATION')}
             className={`pb-2.5 px-3 font-semibold transition-all border-b-2 flex items-center space-x-1.5 ${
-              activeTab === 'CRYPTO'
+              activeTab === 'VERIFICATION'
+                ? 'border-cyan-400 text-cyan-300'
+                : 'border-transparent text-slate-400 hover:text-slate-200'
+            }`}
+          >
+            <ShieldCheck className="w-3.5 h-3.5" />
+            <span>Verification & Chain of Custody</span>
+          </button>
+
+          <button
+            role="tab"
+            aria-selected={activeTab === 'TECHNICAL'}
+            onClick={() => setActiveTab('TECHNICAL')}
+            className={`pb-2.5 px-3 font-semibold transition-all border-b-2 flex items-center space-x-1.5 ${
+              activeTab === 'TECHNICAL'
                 ? 'border-cyan-400 text-cyan-300'
                 : 'border-transparent text-slate-400 hover:text-slate-200'
             }`}
           >
             <Cpu className="w-3.5 h-3.5" />
-            <span>Cryptographic Telemetry & KMS</span>
-          </button>
-
-          <button
-            onClick={() => setActiveTab('WATERMARK')}
-            className={`pb-2.5 px-3 font-semibold transition-all border-b-2 flex items-center space-x-1.5 ${
-              activeTab === 'WATERMARK'
-                ? 'border-cyan-400 text-cyan-300'
-                : 'border-transparent text-slate-400 hover:text-slate-200'
-            }`}
-          >
-            <Fingerprint className="w-3.5 h-3.5" />
-            <span>Forensic Provenance Watermark</span>
+            <span>Technical Details</span>
           </button>
         </div>
 
@@ -139,7 +151,7 @@ export const DocumentViewerModal: React.FC<DocumentViewerModalProps> = ({
         <div className="p-5 flex-1 overflow-y-auto space-y-4">
           
           {/* TAB 1: Document View with Forensic Watermark */}
-          {activeTab === 'DOCUMENT' && (
+          {activeTab === 'PREVIEW' && (
             <div className="relative rounded-xl border border-slate-800 bg-[#060810] p-6 shadow-inner font-mono text-xs leading-relaxed text-slate-200 overflow-hidden">
               
               {/* Semi-transparent Diagonal Repeating Watermark Overlay */}
@@ -192,7 +204,7 @@ export const DocumentViewerModal: React.FC<DocumentViewerModalProps> = ({
           )}
 
           {/* TAB 2: Cryptographic Telemetry */}
-          {activeTab === 'CRYPTO' && (
+          {activeTab === 'VERIFICATION' && (
             <div className="space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs">
                 
@@ -251,7 +263,7 @@ export const DocumentViewerModal: React.FC<DocumentViewerModalProps> = ({
           )}
 
           {/* TAB 3: Forensic Provenance Watermark Details */}
-          {activeTab === 'WATERMARK' && (
+          {activeTab === 'TECHNICAL' && (
             <div className="p-4 rounded-xl bg-slate-900/80 border border-slate-800 space-y-3 text-xs">
               <h3 className="font-bold text-slate-200 flex items-center space-x-2">
                 <Fingerprint className="w-4 h-4 text-cyan-400" />

@@ -39,6 +39,7 @@ export type DocumentClassification = 'CONFIDENTIAL' | 'RESTRICTED' | 'PUBLIC_COU
 export interface DocumentItem {
   id: string;
   case_id: string;
+  fir_number?: string;
   title: string;
   stage: LifecycleStageId;
   stage_name: string;

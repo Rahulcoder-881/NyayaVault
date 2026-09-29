@@ -82,6 +82,7 @@ export const App: React.FC = () => {
   // Sustainable UX and Tab State
   const [isEcoMode, setIsEcoMode] = useState<boolean>(true);
   const [activeTab, setActiveTab] = useState<WorkspaceTab>('DOCUMENTS');
+  const [isLoadingDocs, setIsLoadingDocs] = useState<boolean>(false);
 
   // Modal states
   const [selectedDoc, setSelectedDoc] = useState<DocumentItem | null>(null);
@@ -142,6 +143,7 @@ export const App: React.FC = () => {
       return;
     }
 
+    setIsLoadingDocs(true);
     try {
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), 2000);
@@ -168,6 +170,8 @@ export const App: React.FC = () => {
       }
     } catch {
       // Backend unreachable or offline -> Stay in verified standalone mode
+    } finally {
+      setIsLoadingDocs(false);
     }
 
     setIsLiveBackend(false);
@@ -1160,6 +1164,7 @@ export const App: React.FC = () => {
                   onViewMerkleProof={(doc) => setMerkleProofDoc(doc)}
                   onApplyRedaction={handleApplyRedaction}
                   onOpenUploadModal={() => setIsUploadModalOpen(true)}
+                  isLoading={isLoadingDocs}
                 />
               </div>
 
@@ -1401,6 +1406,7 @@ export const App: React.FC = () => {
                 onViewMerkleProof={(doc) => setMerkleProofDoc(doc)}
                 onApplyRedaction={handleApplyRedaction}
                 onOpenUploadModal={() => setIsUploadModalOpen(true)}
+                isLoading={isLoadingDocs}
               />
             </div>
           </div>

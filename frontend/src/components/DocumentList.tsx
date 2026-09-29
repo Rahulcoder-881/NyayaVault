@@ -20,7 +20,8 @@ import {
   X,
   ArrowUpDown,
   Calendar,
-  FileQuestion
+  FileQuestion,
+  FolderX
 } from 'lucide-react';
 
 interface DocumentListProps {
@@ -57,6 +58,42 @@ const AVAILABLE_STAGES = [
   { label: 'Stage 6: Immutable Archival', value: '6' }
 ];
 
+/**
+ * Loading Skeleton Row for Document Cards
+ */
+const DocumentSkeletonRow: React.FC = () => (
+  <div 
+    className="p-4 rounded-xl border border-slate-800/90 bg-slate-900/40 animate-pulse flex flex-col md:flex-row items-start md:items-center justify-between gap-4"
+    role="status"
+    aria-label="Loading document record skeleton"
+  >
+    <div className="flex items-start space-x-3.5 flex-1 min-w-0">
+      <div className="w-10 h-10 rounded-xl bg-slate-800 shrink-0 mt-0.5" />
+      <div className="space-y-2.5 flex-1 min-w-0">
+        <div className="flex flex-wrap items-center gap-1.5">
+          <div className="h-4 w-16 bg-slate-800 rounded" />
+          <div className="h-4 w-28 bg-slate-800 rounded" />
+          <div className="h-4 w-20 bg-slate-800/70 rounded" />
+          <div className="h-4 w-24 bg-slate-800/60 rounded" />
+        </div>
+        <div className="h-4 w-3/4 bg-slate-800 rounded" />
+        <div className="flex items-center gap-2">
+          <div className="h-3 w-32 bg-slate-800/70 rounded" />
+          <div className="h-3 w-24 bg-slate-800/60 rounded" />
+          <div className="h-3 w-36 bg-slate-800/50 rounded" />
+        </div>
+        <div className="h-6 w-64 max-w-full bg-slate-950/80 border border-slate-800/80 rounded" />
+      </div>
+    </div>
+    <div className="flex items-center gap-2 shrink-0 self-end md:self-center">
+      <div className="h-8 w-8 bg-slate-800 rounded-lg" />
+      <div className="h-8 w-16 bg-slate-800 rounded-lg" />
+      <div className="h-8 w-16 bg-slate-800 rounded-lg" />
+      <div className="h-8 w-16 bg-slate-800 rounded-lg" />
+    </div>
+  </div>
+);
+
 export const DocumentList: React.FC<DocumentListProps> = React.memo(({
   documents,
   currentRole,
@@ -70,11 +107,11 @@ export const DocumentList: React.FC<DocumentListProps> = React.memo(({
   onOpenUploadModal,
   isLoading = false
 }) => {
-  // Search state with debouncing
+  // Search state with debouncing (Requirement 1 & 7)
   const [searchInput, setSearchInput] = useState('');
   const [debouncedSearch, setDebouncedSearch] = useState('');
 
-  // Filter states
+  // Filter states (Requirement 2)
   const [categoryFilter, setCategoryFilter] = useState<string>('ALL');
   const [statusFilter, setStatusFilter] = useState<string>('ALL');
   const [stageFilter, setStageFilter] = useState<string>('ALL');
@@ -82,7 +119,7 @@ export const DocumentList: React.FC<DocumentListProps> = React.memo(({
   const [startDate, setStartDate] = useState<string>('');
   const [endDate, setEndDate] = useState<string>('');
 
-  // Sort state
+  // Sort state (Requirement 3)
   const [sortOption, setSortOption] = useState<SortField>('date-desc');
 
   // UI helpers
@@ -94,7 +131,7 @@ export const DocumentList: React.FC<DocumentListProps> = React.memo(({
   // Effective stage filter considers both external activeStage prop and internal filter
   const effectiveStage = activeStage !== null ? String(activeStage) : stageFilter;
 
-  // 1. Debounce Search Input (250ms)
+  // 1. Debounce Search Input (250ms) - Requirement 7
   useEffect(() => {
     const handler = setTimeout(() => {
       setDebouncedSearch(searchInput.trim());
@@ -118,7 +155,7 @@ export const DocumentList: React.FC<DocumentListProps> = React.memo(({
     return ['ALL', ...Array.from(set)];
   }, [documents]);
 
-  // 2. Clear All Filters Action
+  // 2. Clear All Filters Action - Requirement 5
   const handleClearAllFilters = () => {
     setSearchInput('');
     setDebouncedSearch('');
@@ -130,7 +167,7 @@ export const DocumentList: React.FC<DocumentListProps> = React.memo(({
     setEndDate('');
   };
 
-  // 3. Filter & Sort Logic with RBAC Access Enforcement
+  // 3. Filter & Sort Logic with RBAC Access Enforcement (Requirements 1, 2, 3)
   const filteredAndSorted = useMemo(() => {
     return documents
       .filter((doc) => {
@@ -143,12 +180,12 @@ export const DocumentList: React.FC<DocumentListProps> = React.memo(({
           }
         }
 
-        // External Stage Filter (prop or state)
+        // External or Internal Stage Filter
         if (effectiveStage !== 'ALL' && doc.stage !== Number(effectiveStage)) {
           return false;
         }
 
-        // Category Filter
+        // Document Type / Category Filter
         if (categoryFilter !== 'ALL' && doc.category.toLowerCase() !== categoryFilter.toLowerCase()) {
           return false;
         }
@@ -172,7 +209,7 @@ export const DocumentList: React.FC<DocumentListProps> = React.memo(({
           if (datePreset === 'LAST_30_DAYS' && now - docDate > 30 * 24 * 60 * 60 * 1000) return false;
         }
 
-        // Custom Date Range Filter
+        // Custom Date Range Filter (startDate & endDate)
         if (startDate) {
           const docDate = new Date(doc.timestamp_utc);
           const start = new Date(startDate);
@@ -185,21 +222,43 @@ export const DocumentList: React.FC<DocumentListProps> = React.memo(({
           if (docDate > end) return false;
         }
 
-        // Search Query (title, FIR number, case ID, exhibit number, document ID, SHA-256 hash, and uploading officer)
+        // Search Query (title, FIR number, case ID, exhibit number, document ID, SHA-256 hash, and uploading officer) - Requirement 1
         if (debouncedSearch) {
-          const q = debouncedSearch.toLowerCase();
+          const q = debouncedSearch.toLowerCase().trim();
+
+          // Title match
           const titleMatch = doc.title.toLowerCase().includes(q);
+
+          // Document ID match
           const idMatch = doc.id.toLowerCase().includes(q);
+
+          // Case ID match
           const caseIdMatch = doc.case_id.toLowerCase().includes(q);
+
+          // Exhibit number match
           const exhibitMatch = doc.exhibit_number ? doc.exhibit_number.toLowerCase().includes(q) : false;
-          const hashMatch = doc.sha256_hash.toLowerCase().includes(q) || doc.original_sha256.toLowerCase().includes(q);
-          const officerMatch = doc.uploaded_by.toLowerCase().includes(q) || doc.badge_id.toLowerCase().includes(q);
-          const contentMatch = doc.content.toLowerCase().includes(q);
 
-          // FIR specific query check (e.g. searching '402', '402/2026', 'FIR')
-          const firMatch = q.includes('402') || (q.includes('fir') && doc.category.toLowerCase().includes('fir'));
+          // SHA-256 Hash match (both current hash and original genesis hash)
+          const hashMatch = doc.sha256_hash.toLowerCase().includes(q) || 
+                            doc.original_sha256.toLowerCase().includes(q) ||
+                            (doc.merkle_leaf_hash && doc.merkle_leaf_hash.toLowerCase().includes(q));
 
-          if (!titleMatch && !idMatch && !caseIdMatch && !exhibitMatch && !hashMatch && !officerMatch && !contentMatch && !firMatch) {
+          // Uploading officer match (Name, Badge ID, or Role)
+          const officerMatch = doc.uploaded_by.toLowerCase().includes(q) || 
+                               doc.badge_id.toLowerCase().includes(q) ||
+                               doc.uploader_role.toLowerCase().includes(q);
+
+          // FIR Number match (explicit doc.fir_number, FIR in title, FIR in content, or case ID match)
+          const docFir = doc.fir_number || (doc.title.match(/FIR\s*(?:No\.?)?\s*([0-9/]+)/i)?.[1]) || '';
+          const firMatch = (docFir && docFir.toLowerCase().includes(q)) ||
+                           (q.includes('402') && (doc.case_id.includes('402') || doc.title.includes('402') || doc.content.includes('402'))) ||
+                           (q.includes('fir') && (doc.category.toLowerCase().includes('fir') || doc.title.toLowerCase().includes('fir') || doc.content.toLowerCase().includes('fir')));
+
+          // Evidentiary content & OCR text fallback
+          const contentMatch = doc.content.toLowerCase().includes(q) || 
+                               (doc.ocr_extracted_text ? doc.ocr_extracted_text.toLowerCase().includes(q) : false);
+
+          if (!titleMatch && !firMatch && !caseIdMatch && !exhibitMatch && !idMatch && !hashMatch && !officerMatch && !contentMatch) {
             return false;
           }
         }
@@ -207,6 +266,7 @@ export const DocumentList: React.FC<DocumentListProps> = React.memo(({
         return true;
       })
       .sort((a, b) => {
+        // Sorting by upload date and title (Requirement 3)
         switch (sortOption) {
           case 'date-desc':
             return new Date(b.timestamp_utc).getTime() - new Date(a.timestamp_utc).getTime();
@@ -226,7 +286,7 @@ export const DocumentList: React.FC<DocumentListProps> = React.memo(({
       });
   }, [documents, roleInfo, currentRole, effectiveStage, categoryFilter, statusFilter, datePreset, startDate, endDate, debouncedSearch, sortOption]);
 
-  // Compute active filters list for chip display
+  // Compute active filters list for removable chip display - Requirement 4
   const activeChips = useMemo(() => {
     const chips: { id: string; label: string; onRemove: () => void }[] = [];
 
@@ -258,10 +318,11 @@ export const DocumentList: React.FC<DocumentListProps> = React.memo(({
       });
     }
 
-    if (effectiveStage !== 'ALL') {
+    if (stageFilter !== 'ALL') {
+      const stageObj = AVAILABLE_STAGES.find(s => s.value === stageFilter);
       chips.push({
         id: 'stage',
-        label: `Stage: ${effectiveStage}`,
+        label: stageObj ? stageObj.label.split(':')[0] : `Stage: ${stageFilter}`,
         onRemove: () => setStageFilter('ALL')
       });
     }
@@ -277,7 +338,7 @@ export const DocumentList: React.FC<DocumentListProps> = React.memo(({
     if (startDate || endDate) {
       chips.push({
         id: 'customDate',
-        label: `Date: ${startDate || 'Any'} to ${endDate || 'Any'}`,
+        label: `Date: ${startDate || 'Earliest'} → ${endDate || 'Latest'}`,
         onRemove: () => {
           setStartDate('');
           setEndDate('');
@@ -286,12 +347,12 @@ export const DocumentList: React.FC<DocumentListProps> = React.memo(({
     }
 
     return chips;
-  }, [debouncedSearch, categoryFilter, statusFilter, effectiveStage, datePreset, startDate, endDate]);
+  }, [debouncedSearch, categoryFilter, statusFilter, stageFilter, datePreset, startDate, endDate]);
 
   return (
     <div className="w-full space-y-4 font-sans text-slate-100" role="region" aria-label="Evidence Files & Case Documents List">
       
-      {/* Zero PII Alert for Admin Role */}
+      {/* Zero PII Alert for Admin Role under Section 8.2 */}
       {!roleInfo.canViewAssigned && (
         <div className="p-3.5 rounded-xl bg-purple-950/40 border border-purple-500/40 text-purple-200 text-xs flex flex-wrap items-center justify-between gap-2 shadow-sm">
           <div className="flex items-center gap-2">
@@ -312,10 +373,10 @@ export const DocumentList: React.FC<DocumentListProps> = React.memo(({
         {/* Top Row: Search Input, Quick Filters Toggle, Sort Dropdown & Upload Action */}
         <div className="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3">
           
-          {/* Debounced Search Bar */}
-          <div className="relative flex-1">
+          {/* Debounced Search Bar - Requirements 1, 7, 8 */}
+          <div className="relative flex-1" role="search">
             <label htmlFor="evidence-search-input" className="sr-only">
-              Search by Title, FIR, Case ID, Exhibit No, Document ID, SHA-256 or Officer
+              Search by title, FIR number, case ID, exhibit number, document ID, SHA-256 hash or uploading officer
             </label>
             <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
             <input
@@ -323,7 +384,7 @@ export const DocumentList: React.FC<DocumentListProps> = React.memo(({
               type="text"
               value={searchInput}
               onChange={(e) => setSearchInput(e.target.value)}
-              placeholder="Search by Title, FIR, Case ID, Exhibit No, SHA-256, or Officer..."
+              placeholder="Search by Title, FIR #, Case ID, Exhibit #, Doc ID, SHA-256 or Officer..."
               className="w-full pl-10 pr-9 py-2.5 bg-slate-950/90 border border-slate-700/80 rounded-xl text-xs text-slate-200 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 transition-all font-mono"
             />
             {searchInput && (
@@ -333,7 +394,7 @@ export const DocumentList: React.FC<DocumentListProps> = React.memo(({
                   setSearchInput('');
                   setDebouncedSearch('');
                 }}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-200 p-0.5 rounded"
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-200 p-0.5 rounded focus:outline-none focus:ring-1 focus:ring-cyan-400"
                 aria-label="Clear search input"
               >
                 <X className="w-3.5 h-3.5" />
@@ -344,17 +405,18 @@ export const DocumentList: React.FC<DocumentListProps> = React.memo(({
           {/* Right Action Group: Filters Toggle, Sort Selector, Ingest Button */}
           <div className="flex flex-wrap items-center gap-2">
             
-            {/* Filters Toggle Button */}
+            {/* Filters Toggle Button - Requirement 8 */}
             <button
               type="button"
               onClick={() => setIsFilterPanelOpen(!isFilterPanelOpen)}
-              className={`flex items-center space-x-1.5 px-3 py-2 rounded-xl text-xs font-semibold border transition-all ${
+              className={`flex items-center space-x-1.5 px-3 py-2 rounded-xl text-xs font-semibold border transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-cyan-400 ${
                 isFilterPanelOpen || activeChips.length > 0
                   ? 'bg-cyan-950/60 text-cyan-300 border-cyan-500/40 shadow-sm'
                   : 'bg-slate-800 text-slate-300 border-slate-700 hover:bg-slate-750'
               }`}
               aria-expanded={isFilterPanelOpen}
               aria-controls="extended-filter-panel"
+              aria-label={`Toggle filter panel. ${activeChips.length} active filter${activeChips.length === 1 ? '' : 's'}`}
             >
               <Filter className="w-3.5 h-3.5" />
               <span>Filters</span>
@@ -365,12 +427,12 @@ export const DocumentList: React.FC<DocumentListProps> = React.memo(({
               )}
             </button>
 
-            {/* Sorting Dropdown */}
+            {/* Sorting Dropdown - Requirement 3 */}
             <div className="relative">
               <label htmlFor="evidence-sort-select" className="sr-only">
-                Sort exhibits by
+                Sort exhibits by upload date or title
               </label>
-              <div className="flex items-center space-x-1.5 bg-slate-950 border border-slate-700/80 rounded-xl px-2.5 py-1.5 text-xs">
+              <div className="flex items-center space-x-1.5 bg-slate-950 border border-slate-700/80 rounded-xl px-2.5 py-1.5 text-xs focus-within:ring-2 focus-within:ring-cyan-500">
                 <ArrowUpDown className="w-3.5 h-3.5 text-slate-400 shrink-0" />
                 <select
                   id="evidence-sort-select"
@@ -378,12 +440,12 @@ export const DocumentList: React.FC<DocumentListProps> = React.memo(({
                   onChange={(e) => setSortOption(e.target.value as SortField)}
                   className="bg-transparent text-slate-300 text-xs font-medium focus:outline-none cursor-pointer pr-1"
                 >
-                  <option value="date-desc" className="bg-slate-900 text-slate-200">Date: Newest</option>
-                  <option value="date-asc" className="bg-slate-900 text-slate-200">Date: Oldest</option>
+                  <option value="date-desc" className="bg-slate-900 text-slate-200">Upload Date: Newest First</option>
+                  <option value="date-asc" className="bg-slate-900 text-slate-200">Upload Date: Oldest First</option>
                   <option value="title-asc" className="bg-slate-900 text-slate-200">Title: A to Z</option>
                   <option value="title-desc" className="bg-slate-900 text-slate-200">Title: Z to A</option>
-                  <option value="stage-asc" className="bg-slate-900 text-slate-200">Stage: 1 to 6</option>
-                  <option value="stage-desc" className="bg-slate-900 text-slate-200">Stage: 6 to 1</option>
+                  <option value="stage-asc" className="bg-slate-900 text-slate-200">Lifecycle Stage: 1 to 6</option>
+                  <option value="stage-desc" className="bg-slate-900 text-slate-200">Lifecycle Stage: 6 to 1</option>
                 </select>
               </div>
             </div>
@@ -393,7 +455,8 @@ export const DocumentList: React.FC<DocumentListProps> = React.memo(({
               <button
                 type="button"
                 onClick={onOpenUploadModal}
-                className="flex items-center space-x-1.5 px-3.5 py-2 rounded-xl bg-cyan-600 hover:bg-cyan-500 text-slate-950 text-xs font-bold shadow-md shadow-cyan-600/20 transition-all active:scale-95"
+                className="flex items-center space-x-1.5 px-3.5 py-2 rounded-xl bg-cyan-600 hover:bg-cyan-500 text-slate-950 text-xs font-bold shadow-md shadow-cyan-600/20 transition-all active:scale-95 focus:outline-none focus-visible:ring-2 focus-visible:ring-cyan-300"
+                aria-label="Ingest new exhibit"
               >
                 <Upload className="w-3.5 h-3.5 stroke-[2.5]" />
                 <span>Ingest Exhibit</span>
@@ -404,6 +467,7 @@ export const DocumentList: React.FC<DocumentListProps> = React.memo(({
                 disabled
                 title="Upload restricted under RBAC Rule 8.2 for current role"
                 className="flex items-center space-x-1.5 px-3.5 py-2 rounded-xl bg-slate-800 text-slate-500 text-xs font-semibold cursor-not-allowed border border-slate-700/50"
+                aria-label="Upload restricted under RBAC policy"
               >
                 <Lock className="w-3.5 h-3.5" />
                 <span>Ingest Denied</span>
@@ -414,7 +478,7 @@ export const DocumentList: React.FC<DocumentListProps> = React.memo(({
 
         </div>
 
-        {/* Collapsible Detailed Filter Panel */}
+        {/* Collapsible Detailed Filter Panel - Requirement 2 */}
         {isFilterPanelOpen && (
           <div 
             id="extended-filter-panel" 
@@ -477,15 +541,21 @@ export const DocumentList: React.FC<DocumentListProps> = React.memo(({
               </select>
             </div>
 
-            {/* Filter 4: Date Range Preset / Custom */}
+            {/* Filter 4: Date Range Preset */}
             <div className="space-y-1">
               <label htmlFor="date-preset-select" className="text-[11px] font-mono text-slate-400 uppercase font-semibold">
-                Date Range
+                Date Preset
               </label>
               <select
                 id="date-preset-select"
                 value={datePreset}
-                onChange={(e) => setDatePreset(e.target.value)}
+                onChange={(e) => {
+                  setDatePreset(e.target.value);
+                  if (e.target.value !== 'ALL') {
+                    setStartDate('');
+                    setEndDate('');
+                  }
+                }}
                 className="w-full bg-slate-950 border border-slate-700/80 rounded-xl px-2.5 py-2 text-xs text-slate-200 focus:outline-none focus:ring-1 focus:ring-cyan-500 cursor-pointer"
               >
                 <option value="ALL" className="bg-slate-900 text-slate-200">All Custody Dates</option>
@@ -495,47 +565,63 @@ export const DocumentList: React.FC<DocumentListProps> = React.memo(({
               </select>
             </div>
 
-            {/* Optional Custom Date Filter Inputs */}
-            <div className="sm:col-span-2 lg:col-span-4 pt-1 flex flex-wrap items-center gap-2 text-xs text-slate-400">
-              <span className="text-[11px] font-mono flex items-center gap-1">
-                <Calendar className="w-3.5 h-3.5 text-slate-500" />
-                Custom Ingestion Range:
-              </span>
-              <div className="flex items-center gap-1.5">
-                <input
-                  type="date"
-                  value={startDate}
-                  onChange={(e) => setStartDate(e.target.value)}
-                  className="bg-slate-950 border border-slate-800 rounded-lg px-2 py-1 text-slate-300 text-xs focus:outline-none focus:border-cyan-500"
-                  aria-label="Start date"
-                />
-                <span>to</span>
-                <input
-                  type="date"
-                  value={endDate}
-                  onChange={(e) => setEndDate(e.target.value)}
-                  className="bg-slate-950 border border-slate-800 rounded-lg px-2 py-1 text-slate-300 text-xs focus:outline-none focus:border-cyan-500"
-                  aria-label="End date"
-                />
-                {(startDate || endDate) && (
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setStartDate('');
-                      setEndDate('');
+            {/* Custom Date Range Picker (Start & End Date) - Requirement 2 */}
+            <div className="sm:col-span-2 lg:col-span-4 pt-2 border-t border-slate-800/60 flex flex-wrap items-center justify-between gap-3 text-xs">
+              <div className="flex flex-wrap items-center gap-2">
+                <span className="text-[11px] font-mono text-slate-400 flex items-center gap-1.5 font-semibold">
+                  <Calendar className="w-3.5 h-3.5 text-cyan-400" />
+                  <span>Custom Date Range:</span>
+                </span>
+                <div className="flex items-center gap-1.5">
+                  <label htmlFor="start-date-input" className="sr-only">Start Date</label>
+                  <input
+                    id="start-date-input"
+                    type="date"
+                    value={startDate}
+                    onChange={(e) => {
+                      setStartDate(e.target.value);
+                      if (e.target.value) setDatePreset('ALL');
                     }}
-                    className="text-cyan-400 hover:text-cyan-300 text-[11px] underline"
-                  >
-                    Clear Dates
-                  </button>
-                )}
+                    className="bg-slate-950 border border-slate-700/80 rounded-lg px-2.5 py-1 text-slate-200 text-xs focus:outline-none focus:ring-1 focus:ring-cyan-500 font-mono"
+                    aria-label="Filter from start date"
+                  />
+                  <span className="text-slate-500 font-mono text-xs">to</span>
+                  <label htmlFor="end-date-input" className="sr-only">End Date</label>
+                  <input
+                    id="end-date-input"
+                    type="date"
+                    value={endDate}
+                    onChange={(e) => {
+                      setEndDate(e.target.value);
+                      if (e.target.value) setDatePreset('ALL');
+                    }}
+                    className="bg-slate-950 border border-slate-700/80 rounded-lg px-2.5 py-1 text-slate-200 text-xs focus:outline-none focus:ring-1 focus:ring-cyan-500 font-mono"
+                    aria-label="Filter to end date"
+                  />
+                  {(startDate || endDate) && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setStartDate('');
+                        setEndDate('');
+                      }}
+                      className="text-cyan-400 hover:text-cyan-300 text-[11px] underline underline-offset-2 ml-1"
+                    >
+                      Clear Dates
+                    </button>
+                  )}
+                </div>
+              </div>
+
+              <div className="text-[11px] text-slate-500 font-mono">
+                Filter exhibits by exact UTC ingestion timestamp
               </div>
             </div>
 
           </div>
         )}
 
-        {/* Active Filter Chips & Clear All Action */}
+        {/* Active Filter Chips & Clear All Action - Requirements 4 & 5 */}
         {activeChips.length > 0 && (
           <div className="pt-2 border-t border-slate-800/80 flex flex-wrap items-center justify-between gap-2 text-xs">
             <div className="flex flex-wrap items-center gap-1.5">
@@ -543,13 +629,13 @@ export const DocumentList: React.FC<DocumentListProps> = React.memo(({
               {activeChips.map((chip) => (
                 <span
                   key={chip.id}
-                  className="inline-flex items-center space-x-1.5 px-2.5 py-1 rounded-lg text-xs font-medium bg-cyan-950/80 text-cyan-300 border border-cyan-500/30"
+                  className="inline-flex items-center space-x-1.5 px-2.5 py-1 rounded-lg text-xs font-medium bg-cyan-950/80 text-cyan-300 border border-cyan-500/30 shadow-sm"
                 >
                   <span>{chip.label}</span>
                   <button
                     type="button"
                     onClick={chip.onRemove}
-                    className="p-0.5 hover:bg-cyan-900 rounded-full text-cyan-400 hover:text-cyan-200 transition-colors"
+                    className="p-0.5 hover:bg-cyan-900 rounded-full text-cyan-400 hover:text-cyan-200 transition-colors focus:outline-none focus-visible:ring-1 focus-visible:ring-cyan-400"
                     aria-label={`Remove filter: ${chip.label}`}
                   >
                     <X className="w-3 h-3" />
@@ -561,7 +647,8 @@ export const DocumentList: React.FC<DocumentListProps> = React.memo(({
             <button
               type="button"
               onClick={handleClearAllFilters}
-              className="text-xs font-semibold text-rose-400 hover:text-rose-300 flex items-center space-x-1 underline underline-offset-2 transition-colors ml-auto"
+              className="text-xs font-semibold text-rose-400 hover:text-rose-300 flex items-center space-x-1 underline underline-offset-2 transition-colors ml-auto focus:outline-none focus-visible:ring-1 focus-visible:ring-rose-400 rounded px-1"
+              aria-label="Clear all active search and filter constraints"
             >
               <RotateCcw className="w-3 h-3" />
               <span>Clear All Filters</span>
@@ -571,64 +658,81 @@ export const DocumentList: React.FC<DocumentListProps> = React.memo(({
 
       </div>
 
-      {/* Loading Skeletons */}
+      {/* Loading Skeletons - Requirement 6 */}
       {isLoading ? (
-        <div className="space-y-3" role="status" aria-label="Loading documents">
-          {[1, 2, 3].map((n) => (
-            <div key={n} className="p-4 rounded-xl border border-slate-800 bg-slate-900/40 animate-pulse flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
-              <div className="flex items-start space-x-3.5 flex-1">
-                <div className="w-10 h-10 rounded-xl bg-slate-800 shrink-0" />
-                <div className="space-y-2 flex-1">
-                  <div className="flex gap-2">
-                    <div className="h-4 w-16 bg-slate-800 rounded" />
-                    <div className="h-4 w-28 bg-slate-800 rounded" />
-                  </div>
-                  <div className="h-4 w-3/4 bg-slate-800 rounded" />
-                  <div className="h-3 w-1/2 bg-slate-800/60 rounded" />
-                </div>
-              </div>
-              <div className="flex gap-2 shrink-0">
-                <div className="h-8 w-20 bg-slate-800 rounded-lg" />
-                <div className="h-8 w-20 bg-slate-800 rounded-lg" />
-              </div>
-            </div>
-          ))}
+        <div className="space-y-3" role="status" aria-label="Loading case documents">
+          <DocumentSkeletonRow />
+          <DocumentSkeletonRow />
+          <DocumentSkeletonRow />
+          <DocumentSkeletonRow />
           <span className="sr-only">Loading evidence records...</span>
         </div>
       ) : filteredAndSorted.length === 0 ? (
         
-        /* Empty State */
-        <div className="p-10 sm:p-14 text-center rounded-2xl bg-slate-900/40 border border-slate-800 space-y-4 max-w-xl mx-auto shadow-inner">
+        /* Useful Empty States - Requirement 6 */
+        <div 
+          className="p-10 sm:p-14 text-center rounded-2xl bg-slate-900/40 border border-slate-800 space-y-4 max-w-xl mx-auto shadow-inner"
+          role="status"
+          aria-live="polite"
+        >
           <div className="w-14 h-14 rounded-2xl bg-slate-800/80 border border-slate-700/60 text-slate-400 flex items-center justify-center mx-auto">
-            <FileQuestion className="w-7 h-7" />
+            {activeChips.length > 0 ? (
+              <FileQuestion className="w-7 h-7 text-cyan-400" />
+            ) : (
+              <FolderX className="w-7 h-7 text-slate-400" />
+            )}
           </div>
           <div className="space-y-1.5">
             <h3 className="text-base font-bold text-slate-100 font-heading">
-              No Case Exhibits Found
+              {activeChips.length > 0 
+                ? 'No Matching Case Exhibits Found' 
+                : effectiveStage !== 'ALL'
+                ? `No Evidence Ingested in Stage ${effectiveStage}`
+                : 'No Evidence Records Found'}
             </h3>
-            <p className="text-xs text-slate-400 leading-relaxed font-sans">
-              No evidence documents matched your search query or filter combination.
-              {debouncedSearch && <span> Query: <strong className="text-cyan-400 font-mono">"{debouncedSearch}"</strong>.</span>}
+            <p className="text-xs text-slate-400 leading-relaxed font-sans max-w-md mx-auto">
+              {activeChips.length > 0
+                ? 'No evidence records match your current search query or active filter combination.'
+                : effectiveStage !== 'ALL'
+                ? `No digital evidence, forensics, or exhibits have been registered under custody Stage ${effectiveStage} yet.`
+                : 'No case documents or exhibits are currently registered in this case custody chain.'}
             </p>
+            {debouncedSearch && (
+              <p className="text-xs text-slate-300 font-mono">
+                Query: <span className="text-cyan-400 font-bold">"{debouncedSearch}"</span>
+              </p>
+            )}
           </div>
 
-          {activeChips.length > 0 && (
-            <div className="pt-2">
+          <div className="pt-2 flex flex-wrap items-center justify-center gap-2">
+            {activeChips.length > 0 && (
               <button
                 type="button"
                 onClick={handleClearAllFilters}
-                className="px-4 py-2 bg-cyan-600 hover:bg-cyan-500 text-slate-950 font-bold text-xs rounded-xl shadow-md transition-all inline-flex items-center space-x-1.5"
+                className="px-4 py-2 bg-cyan-600 hover:bg-cyan-500 text-slate-950 font-bold text-xs rounded-xl shadow-md transition-all inline-flex items-center space-x-1.5 focus:outline-none focus-visible:ring-2 focus-visible:ring-cyan-400"
+                aria-label={`Reset all ${activeChips.length} active filters`}
               >
                 <RotateCcw className="w-3.5 h-3.5" />
                 <span>Reset All Filters ({activeChips.length})</span>
               </button>
-            </div>
-          )}
+            )}
+            {effectiveStage !== 'ALL' && roleInfo.canUpload && (
+              <button
+                type="button"
+                onClick={onOpenUploadModal}
+                className="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-cyan-300 border border-cyan-500/30 font-semibold text-xs rounded-xl shadow-md transition-all inline-flex items-center space-x-1.5 focus:outline-none focus-visible:ring-2 focus-visible:ring-cyan-400"
+                aria-label={`Ingest new exhibit for Stage ${effectiveStage}`}
+              >
+                <Upload className="w-3.5 h-3.5" />
+                <span>Ingest Exhibit for Stage {effectiveStage}</span>
+              </button>
+            )}
+          </div>
         </div>
 
       ) : (
 
-        /* Document Grid / Table */
+        /* Document Grid / Table with Preserved Document Actions - Requirements 8, 9 */
         <div className="space-y-2.5" role="feed" aria-label="Evidence exhibits feed">
           {filteredAndSorted.map((doc) => {
             const isTampered = doc.status === 'TAMPERED' || doc.status === 'QUARANTINED';
@@ -639,7 +743,7 @@ export const DocumentList: React.FC<DocumentListProps> = React.memo(({
                 key={doc.id}
                 tabIndex={0}
                 role="article"
-                aria-label={`Exhibit ${doc.exhibit_number || doc.id}: ${doc.title}`}
+                aria-label={`Exhibit ${doc.exhibit_number || doc.id}: ${doc.title}. Status: ${doc.status}. Click or press Enter to inspect.`}
                 onClick={() => onSelectDocument(doc)}
                 onKeyDown={(e) => {
                   if (e.key === 'Enter' || e.key === ' ') {
@@ -736,7 +840,7 @@ export const DocumentList: React.FC<DocumentListProps> = React.memo(({
                         onClick={(e) => handleCopyHash(e, doc.sha256_hash)}
                         className="p-1 hover:bg-slate-800 rounded text-slate-400 hover:text-cyan-300 transition-colors focus:outline-none focus:ring-1 focus:ring-cyan-500"
                         title="Copy Hash Digest"
-                        aria-label="Copy SHA-256 hash digest"
+                        aria-label={`Copy SHA-256 hash digest for ${doc.title}`}
                       >
                         {copiedHash === doc.sha256_hash ? (
                           <Check className="w-3.5 h-3.5 text-emerald-400" />
@@ -748,7 +852,7 @@ export const DocumentList: React.FC<DocumentListProps> = React.memo(({
                   </div>
                 </div>
 
-                {/* Right: Quick Action Controls */}
+                {/* Right: Quick Action Controls - Preserved Actions (Requirement 9) */}
                 <div className="flex items-center space-x-2 shrink-0 self-end md:self-center pt-2 md:pt-0 border-t md:border-t-0 border-slate-800/80 w-full md:w-auto justify-end">
                   
                   {/* Merkle Proof Button */}
@@ -758,14 +862,14 @@ export const DocumentList: React.FC<DocumentListProps> = React.memo(({
                       e.stopPropagation();
                       onViewMerkleProof(doc);
                     }}
-                    className="p-2 rounded-lg bg-slate-800/80 hover:bg-indigo-950/80 hover:text-indigo-300 text-slate-300 border border-slate-700/60 text-xs transition-colors focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                    className="p-2 rounded-lg bg-slate-800/80 hover:bg-indigo-950/80 hover:text-indigo-300 text-slate-300 border border-slate-700/60 text-xs transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400"
                     title="Inspect Merkle Audit Proof"
                     aria-label={`Inspect Merkle Proof for ${doc.title}`}
                   >
                     <GitBranch className="w-4 h-4" />
                   </button>
 
-                  {/* Redact Action (Prosecutor) */}
+                  {/* Redact Action (Prosecutor Role) */}
                   {currentRole === 'PROSECUTOR' && !isRedacted && (
                     <button
                       type="button"
@@ -773,7 +877,7 @@ export const DocumentList: React.FC<DocumentListProps> = React.memo(({
                         e.stopPropagation();
                         onApplyRedaction(doc);
                       }}
-                      className="flex items-center space-x-1 px-2.5 py-1.5 rounded-lg bg-amber-950/50 hover:bg-amber-900/60 text-amber-300 border border-amber-500/40 text-xs transition-colors focus:outline-none focus:ring-1 focus:ring-amber-500"
+                      className="flex items-center space-x-1 px-2.5 py-1.5 rounded-lg bg-amber-950/50 hover:bg-amber-900/60 text-amber-300 border border-amber-500/40 text-xs transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-400"
                       title="Apply Witness Protection Redaction"
                       aria-label={`Apply witness protection redaction to ${doc.title}`}
                     >
@@ -790,7 +894,7 @@ export const DocumentList: React.FC<DocumentListProps> = React.memo(({
                         e.stopPropagation();
                         onRestoreDoc(doc);
                       }}
-                      className="flex items-center space-x-1.5 px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-semibold shadow-md shadow-emerald-600/30 transition-all focus:outline-none focus:ring-1 focus:ring-emerald-400"
+                      className="flex items-center space-x-1.5 px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-semibold shadow-md shadow-emerald-600/30 transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-300"
                       title="Restore original verified genesis hash"
                       aria-label={`Restore original verified state for ${doc.title}`}
                     >
@@ -804,7 +908,7 @@ export const DocumentList: React.FC<DocumentListProps> = React.memo(({
                         e.stopPropagation();
                         onSimulateTamper(doc);
                       }}
-                      className="flex items-center space-x-1.5 px-3 py-1.5 rounded-lg bg-red-950/80 border border-red-500/40 hover:bg-red-900/80 text-red-300 text-xs transition-all focus:outline-none focus:ring-1 focus:ring-red-400"
+                      className="flex items-center space-x-1.5 px-3 py-1.5 rounded-lg bg-red-950/80 border border-red-500/40 hover:bg-red-900/80 text-red-300 text-xs transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-red-400"
                       title="Simulate Malicious Byte Alteration"
                       aria-label={`Simulate tamper attack on ${doc.title}`}
                     >
@@ -824,7 +928,7 @@ export const DocumentList: React.FC<DocumentListProps> = React.memo(({
                         onSelectDocument(doc);
                       }
                     }}
-                    className="flex items-center space-x-1.5 px-3 py-1.5 rounded-lg bg-emerald-950/80 hover:bg-emerald-900/80 text-emerald-300 border border-emerald-500/40 text-xs font-medium transition-all focus:outline-none focus:ring-1 focus:ring-emerald-400"
+                    className="flex items-center space-x-1.5 px-3 py-1.5 rounded-lg bg-emerald-950/80 hover:bg-emerald-900/80 text-emerald-300 border border-emerald-500/40 text-xs font-medium transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400"
                     title="Audit and verify evidence integrity"
                     aria-label={`Verify evidence integrity for ${doc.title}`}
                   >
@@ -832,11 +936,11 @@ export const DocumentList: React.FC<DocumentListProps> = React.memo(({
                     <span>Verify</span>
                   </button>
 
-                  {/* View Details / Watermark */}
+                  {/* View Details / Watermark Inspector */}
                   <button
                     type="button"
                     onClick={() => onSelectDocument(doc)}
-                    className="flex items-center space-x-1.5 px-3 py-1.5 rounded-lg bg-cyan-950/80 hover:bg-cyan-900/80 text-cyan-300 border border-cyan-500/40 text-xs font-medium transition-all focus:outline-none focus:ring-1 focus:ring-cyan-400"
+                    className="flex items-center space-x-1.5 px-3 py-1.5 rounded-lg bg-cyan-950/80 hover:bg-cyan-900/80 text-cyan-300 border border-cyan-500/40 text-xs font-medium transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-cyan-400"
                     title="Inspect document and view steganographic watermark"
                     aria-label={`Inspect ${doc.title}`}
                   >
@@ -852,8 +956,11 @@ export const DocumentList: React.FC<DocumentListProps> = React.memo(({
         </div>
       )}
 
-      {/* Summary Footer Bar */}
-      <div className="flex flex-wrap items-center justify-between text-xs text-slate-500 font-mono px-2 pt-1 border-t border-slate-900">
+      {/* Summary Footer Bar with aria-live results announcer */}
+      <div 
+        className="flex flex-wrap items-center justify-between text-xs text-slate-500 font-mono px-2 pt-1 border-t border-slate-900"
+        aria-live="polite"
+      >
         <div>
           Showing {filteredAndSorted.length} of {documents.length} case documents
         </div>

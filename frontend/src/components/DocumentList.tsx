@@ -57,7 +57,7 @@ const AVAILABLE_STAGES = [
   { label: 'Stage 6: Immutable Archival', value: '6' }
 ];
 
-export const DocumentList: React.FC<DocumentListProps> = ({
+export const DocumentList: React.FC<DocumentListProps> = React.memo(({
   documents,
   currentRole,
   activeStage,
@@ -866,6 +866,6 @@ export const DocumentList: React.FC<DocumentListProps> = ({
 
     </div>
   );
-};
+});
 
 export default DocumentList;

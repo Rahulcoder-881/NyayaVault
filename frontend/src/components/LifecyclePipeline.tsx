@@ -18,7 +18,7 @@ interface LifecyclePipelineProps {
   documents: DocumentItem[];
 }
 
-export const LifecyclePipeline: React.FC<LifecyclePipelineProps> = ({
+export const LifecyclePipeline: React.FC<LifecyclePipelineProps> = React.memo(({
   activeStage,
   onSelectStage,
   documents
@@ -126,4 +126,4 @@ export const LifecyclePipeline: React.FC<LifecyclePipelineProps> = ({
       </div>
     </div>
   );
-};
+});

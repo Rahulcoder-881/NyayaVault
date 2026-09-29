@@ -37,7 +37,7 @@ interface NavbarProps {
   onOpenPresentationTour?: () => void;
 }
 
-export const Navbar: React.FC<NavbarProps> = ({
+export const Navbar: React.FC<NavbarProps> = React.memo(({
   currentRole,
   onSelectRole,
   integrityScore,
@@ -314,5 +314,5 @@ export const Navbar: React.FC<NavbarProps> = ({
       </div>
     </header>
   );
-};
+});
 

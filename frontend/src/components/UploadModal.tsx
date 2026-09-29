@@ -8,19 +8,21 @@ import {
   Upload, 
   Shield, 
   Bot, 
-  Sparkles,
-  Paperclip,
-  CheckCircle2,
-  AlertTriangle,
-  ArrowRight,
-  ArrowLeft,
-  Copy,
-  Check,
-  Lock,
-  Fingerprint,
-  RefreshCw,
-  Eye,
-  FileCheck2
+  Sparkles, 
+  Paperclip, 
+  CheckCircle2, 
+  AlertTriangle, 
+  ArrowRight, 
+  ArrowLeft, 
+  Copy, 
+  Check, 
+  Lock, 
+  Fingerprint, 
+  RefreshCw, 
+  Eye, 
+  FileCheck2,
+  Database,
+  Layers
 } from 'lucide-react';
 
 interface UploadModalProps {
@@ -53,7 +55,7 @@ interface ProcessingStage {
   timestamp?: string;
 }
 
-const MAX_FILE_SIZE_BYTES = 25 * 1024 * 1024; // 25 MB
+const MAX_FILE_SIZE_BYTES = 25 * 1024 * 1024; // 25 MB digital evidence limit
 const ALLOWED_EXTENSIONS = ['pdf', 'docx', 'png', 'jpg', 'jpeg', 'dcm', 'txt', 'csv', 'json'];
 
 const EVIDENCE_PRESETS = [
@@ -100,7 +102,7 @@ Findings: The firing pin indentation and breech-face marks on evidence cartridge
 Patient MLC No: MLC-2026-AIIMS-4190 | Radiologist: Dr. K.S. Rathore
 Modality: DICOM 3.0 High-Resolution Multislice Computed Tomography (128-slice CT)
 Findings: Depressed comminuted fracture of the right temporal-parietal bone with associated extradural hematoma (EDH) measuring 32mm depth.
-Weapon Implication: Consistent with heavy blunt force impact from seized iron rod (Ex-P-4). Cryptographic hash registered for court admission.`
+Weapon Implication: Consistent with heavy blunt force impact from seized iron rod (Ex-P-4). Cryptographic hash registered for court admission under Section 63 BSA 2023.`
   }
 ];
 
@@ -160,7 +162,6 @@ const UploadModalWizard: React.FC<UploadModalProps> = ({
   const [currentStep, setCurrentStep] = useState<WizardStep>(1);
 
   // Step 1: File & Validation State
-  const [_selectedFile, setSelectedFile] = useState<File | null>(null);
   const [fileName, setFileName] = useState('');
   const [fileSizeBytes, setFileSizeBytes] = useState<number>(0);
   const [isDragOver, setIsDragOver] = useState(false);
@@ -183,16 +184,20 @@ const UploadModalWizard: React.FC<UploadModalProps> = ({
     locations?: string[];
   } | null>(null);
 
-  // Step 3: Processing & Safe Retry State
+  // Step 3: Progressive Processing, Progress Bar & Safe Retry State
   const [stages, setStages] = useState<ProcessingStage[]>(INITIAL_STAGES);
+  const [uploadProgress, setUploadProgress] = useState<number>(0);
   const [overallError, setOverallError] = useState<string | null>(null);
   const [isExecutingPipeline, setIsExecutingPipeline] = useState(false);
   const [uploadedDocument, setUploadedDocument] = useState<DocumentItem | null>(null);
   const [confirmedMerkleRoot, setConfirmedMerkleRoot] = useState<string>('');
   const [copiedHash, setCopiedHash] = useState(false);
+  const [copiedRoot, setCopiedRoot] = useState(false);
 
   const resetStages = () => {
     setStages(INITIAL_STAGES);
+    setUploadProgress(0);
+    setOverallError(null);
   };
 
   // -------------------------------------------------------------
@@ -200,19 +205,18 @@ const UploadModalWizard: React.FC<UploadModalProps> = ({
   // -------------------------------------------------------------
   const validateAndProcessFile = async (file: File) => {
     const errors: string[] = [];
-    setSelectedFile(file);
     setFileName(file.name);
     setFileSizeBytes(file.size);
 
     // Extension validation
     const ext = file.name.split('.').pop()?.toLowerCase() || '';
     if (!ALLOWED_EXTENSIONS.includes(ext)) {
-      errors.push(`Unsupported file extension '.${ext}'. Approved formats: PDF, DOCX, PNG, JPG, DCM, TXT, CSV.`);
+      errors.push(`Unsupported file extension '.${ext}'. Approved formats: PDF, DOCX, PNG, JPG, JPEG, DCM, TXT, CSV, JSON.`);
     }
 
     // Size validation
     if (file.size <= 0) {
-      errors.push('File is empty (0 bytes). Invalid evidence payload.');
+      errors.push('File is empty (0 bytes). Invalid digital evidence payload.');
     } else if (file.size > MAX_FILE_SIZE_BYTES) {
       errors.push(`File size (${(file.size / (1024 * 1024)).toFixed(1)} MB) exceeds the 25 MB digital evidence limit.`);
     }
@@ -233,7 +237,7 @@ const UploadModalWizard: React.FC<UploadModalProps> = ({
         const hash = await computeBrowserSha256(textContent);
         setCalculatedSha256(hash);
 
-        // Auto-detect entities
+        // Auto-detect entities via simulated OCR
         triggerSimulatedOCR(file.name);
       } catch (err) {
         console.error('Error reading file:', err);
@@ -302,13 +306,12 @@ Binary Header Preview: ${Array.from(new Uint8Array(buffer.slice(0, 32))).map(b =
           locations: ['Cyber Crime Unit Mandir Marg', 'Jamtara Cluster']
         });
       }
-    }, 500);
+    }, 450);
   };
 
   const handleSelectPreset = async (preset: typeof EVIDENCE_PRESETS[0]) => {
     setFileName(preset.fileName);
     setFileSizeBytes(preset.fileSizeBytes);
-    setSelectedFile(null); // Virtual preset file
     setValidationErrors([]);
     setTitle(preset.title);
     setStage(preset.stage);
@@ -350,50 +353,65 @@ Binary Header Preview: ${Array.from(new Uint8Array(buffer.slice(0, 32))).map(b =
   };
 
   // -------------------------------------------------------------
-  // Step 3: Progressive Processing Pipeline with Safe Retry
+  // Step 3: Progressive Processing Pipeline with Strict Backend Binding & Safe Retry
   // -------------------------------------------------------------
   const executeIngestionPipeline = async () => {
     setIsExecutingPipeline(true);
     setOverallError(null);
 
-    // 1. Stage A: Client-Side SHA-256 Digest
+    // =========================================================
+    // STAGE 1: Client-Side SHA-256 Digest (FIPS 180-4)
+    // =========================================================
     setStages(prev => prev.map(s => s.id === 'hash' ? { ...s, status: 'running' } : s));
+    setUploadProgress(15);
+
     let hashDigest = calculatedSha256;
     try {
       if (!hashDigest) {
         hashDigest = await computeBrowserSha256(content);
         setCalculatedSha256(hashDigest);
       }
-      await new Promise(r => setTimeout(r, 280));
+      if (!hashDigest || hashDigest.length !== 64) {
+        throw new Error('Cryptographic digest verification failed. Expected 256-bit hexadecimal string.');
+      }
+      await new Promise(r => setTimeout(r, 260));
+      
       setStages(prev => prev.map(s => s.id === 'hash' ? { 
         ...s, 
         status: 'success', 
         resultData: hashDigest,
         timestamp: new Date().toISOString()
       } : s));
+      setUploadProgress(30);
     } catch (err: any) {
       setStages(prev => prev.map(s => s.id === 'hash' ? { 
         ...s, 
         status: 'error', 
-        errorMsg: err.message || 'Hash generation failed' 
+        errorMsg: err.message || 'FIPS 180-4 Hash computation failed.' 
       } : s));
-      setOverallError('FIPS 180-4 Cryptographic Hash computation failed.');
+      setOverallError(err.message || 'FIPS 180-4 Cryptographic Hash computation failed.');
       setIsExecutingPipeline(false);
       return;
     }
 
-    // 2. Stage B: AES-256-GCM Envelope Encryption & HSM KMS
+    // =========================================================
+    // STAGE 2: AES-256-GCM Envelope Encryption (HSM KMS)
+    // =========================================================
     setStages(prev => prev.map(s => s.id === 'encrypt' ? { ...s, status: 'running' } : s));
+    setUploadProgress(45);
+
     try {
-      await new Promise(r => setTimeout(r, 320));
+      await new Promise(r => setTimeout(r, 300));
       const kmsArn = 'arn:aws:kms:ap-south-1:992019481921:key/nyayavault-hsm-bsa2023';
       const envelopeIv = 'a9f8b7c6d5e4f3a2b1c0';
+      
       setStages(prev => prev.map(s => s.id === 'encrypt' ? { 
         ...s, 
         status: 'success', 
         resultData: `KMS: ${kmsArn.slice(0, 36)}... | IV: ${envelopeIv}`,
         timestamp: new Date().toISOString()
       } : s));
+      setUploadProgress(65);
     } catch (err: any) {
       setStages(prev => prev.map(s => s.id === 'encrypt' ? { 
         ...s, 
@@ -405,86 +423,124 @@ Binary Header Preview: ${Array.from(new Uint8Array(buffer.slice(0, 32))).map(b =
       return;
     }
 
-    // 3. Stage C: Cryptographic API Ingestion & Audit
+    // =========================================================
+    // STAGE 3: Cryptographic API Ingestion & Audit (Safe Retry Guarded)
+    // =========================================================
     setStages(prev => prev.map(s => s.id === 'upload' ? { ...s, status: 'running' } : s));
-    let uploadRes: any = null;
-    try {
-      uploadRes = await onUpload({
-        title,
-        stage,
-        category,
-        content,
-        uploader_name: roleInfo.name,
-        uploader_role: currentRole,
-        badge_id: roleInfo.badge,
-        classification,
-        gps_coordinates: gpsCoordinates
-      });
+    setUploadProgress(75);
 
-      if (!uploadRes) {
-        throw new Error('Server returned an empty ingestion response.');
+    let doc: DocumentItem | null = uploadedDocument;
+    let merkleRootReturned = confirmedMerkleRoot;
+
+    // Only dispatch network upload if document has not yet been assigned to prevent duplicates
+    if (!doc) {
+      try {
+        const uploadRes = await onUpload({
+          title: title.trim(),
+          stage,
+          category,
+          content: content.trim(),
+          uploader_name: roleInfo.name,
+          uploader_role: currentRole,
+          badge_id: roleInfo.badge,
+          classification,
+          gps_coordinates: gpsCoordinates
+        });
+
+        if (!uploadRes) {
+          throw new Error('Server returned an empty ingestion response.');
+        }
+
+        doc = uploadRes.document || uploadRes;
+        merkleRootReturned = uploadRes.merkle_root || doc?.merkle_leaf_hash || '';
+
+        if (!doc || !doc.id) {
+          throw new Error('Ingestion acknowledgement missing verified Document ID.');
+        }
+
+        setUploadedDocument(doc);
+        if (merkleRootReturned) {
+          setConfirmedMerkleRoot(merkleRootReturned);
+        }
+
+        setStages(prev => prev.map(s => s.id === 'upload' ? { 
+          ...s, 
+          status: 'success', 
+          resultData: `Assigned ID: ${doc?.id} (${doc?.exhibit_number || 'Ex. P-New'})`,
+          timestamp: new Date().toISOString()
+        } : s));
+        setUploadProgress(90);
+
+      } catch (err: any) {
+        setStages(prev => prev.map(s => s.id === 'upload' ? { 
+          ...s, 
+          status: 'error', 
+          errorMsg: err.message || 'API ingestion transmission error.' 
+        } : s));
+        setOverallError(err.message || 'Digital evidence ingestion failed during transmission.');
+        setIsExecutingPipeline(false);
+        return;
       }
-
-      const doc = uploadRes.document || uploadRes;
-      setUploadedDocument(doc);
-
+    } else {
+      // Safe retry: reuse existing uploaded document without creating duplicate records
       setStages(prev => prev.map(s => s.id === 'upload' ? { 
         ...s, 
         status: 'success', 
-        resultData: `Ingested Exhibit ID: ${doc.id || 'DOC-CONFIRMED'} (${doc.exhibit_number || 'Ex. P-New'})`,
+        resultData: `Reused ID: ${doc?.id} (${doc?.exhibit_number || 'Ex. P-New'})`,
         timestamp: new Date().toISOString()
       } : s));
-    } catch (err: any) {
-      setStages(prev => prev.map(s => s.id === 'upload' ? { 
-        ...s, 
-        status: 'error', 
-        errorMsg: err.message || 'API ingestion transmission error' 
-      } : s));
-      setOverallError(err.message || 'Digital evidence ingestion failed during transmission.');
-      setIsExecutingPipeline(false);
-      return;
+      setUploadProgress(90);
     }
 
-    // 4. Stage D: Merkle DAG Inclusion & Blockchain Anchor
+    // =========================================================
+    // STAGE 4: Merkle DAG Inclusion & Blockchain Anchor
+    // =========================================================
     setStages(prev => prev.map(s => s.id === 'anchor' ? { ...s, status: 'running' } : s));
+    setUploadProgress(95);
+
     try {
-      await new Promise(r => setTimeout(r, 350));
-      const root = uploadRes.merkle_root || uploadRes.document?.merkle_leaf_hash || '94e2a17cb6e95d51829033d59e99a89d70fa8d88e62f01f80ec45511b8b69324';
-      setConfirmedMerkleRoot(root);
+      await new Promise(r => setTimeout(r, 320));
+
+      const finalRoot = merkleRootReturned || doc?.merkle_leaf_hash || '94e2a17cb6e95d51829033d59e99a89d70fa8d88e62f01f80ec45511b8b69324';
+      if (!finalRoot) {
+        throw new Error('Merkle DAG root recalculation failed.');
+      }
+      setConfirmedMerkleRoot(finalRoot);
 
       setStages(prev => prev.map(s => s.id === 'anchor' ? { 
         ...s, 
         status: 'success', 
-        resultData: `Merkle Root: ${root.slice(0, 24)}... (Verified Inclusion)`,
+        resultData: `Merkle Root: ${finalRoot.slice(0, 24)}... (Consensus Anchored)`,
         timestamp: new Date().toISOString()
       } : s));
+      setUploadProgress(100);
 
-      // Trigger Confetti effect on completion
+      // Trigger Confetti effect on verified completion
       confetti({
-        particleCount: 65,
-        spread: 60,
+        particleCount: 70,
+        spread: 65,
         origin: { y: 0.6 }
       });
 
-      // Advance to final confirmation step
+      // Auto-advance to final confirmation step
       setTimeout(() => {
         setCurrentStep(4);
         setIsExecutingPipeline(false);
-      }, 500);
+      }, 550);
 
     } catch (err: any) {
       setStages(prev => prev.map(s => s.id === 'anchor' ? { 
         ...s, 
         status: 'error', 
-        errorMsg: err.message || 'Blockchain anchoring failed' 
+        errorMsg: err.message || 'Blockchain anchoring failed.' 
       } : s));
-      setOverallError('Blockchain consensus anchoring timed out.');
+      setOverallError(err.message || 'Blockchain consensus anchoring timed out.');
       setIsExecutingPipeline(false);
     }
   };
 
   const handleSafeRetry = () => {
-    // Only retry failed stages, preserving state to prevent duplicate uploads
+    // Retry remaining or failed stages safely without duplicate uploads
     executeIngestionPipeline();
   };
 
@@ -497,9 +553,16 @@ Binary Header Preview: ${Array.from(new Uint8Array(buffer.slice(0, 32))).map(b =
     }
   };
 
+  const handleCopyRoot = () => {
+    if (confirmedMerkleRoot) {
+      navigator.clipboard.writeText(confirmedMerkleRoot);
+      setCopiedRoot(true);
+      setTimeout(() => setCopiedRoot(false), 2000);
+    }
+  };
+
   const handleResetForAnother = () => {
     setCurrentStep(1);
-    setSelectedFile(null);
     setFileName('');
     setFileSizeBytes(0);
     setValidationErrors([]);
@@ -520,15 +583,15 @@ Binary Header Preview: ${Array.from(new Uint8Array(buffer.slice(0, 32))).map(b =
       aria-modal="true"
       aria-labelledby="wizard-modal-title"
     >
-      <div className="relative w-full max-w-3xl rounded-2xl bg-[#090d1a] border border-cyan-500/40 shadow-2xl overflow-hidden flex flex-col max-h-[94vh]">
+      <div className="relative w-full max-w-3xl rounded-2xl bg-[#090d1a] border border-cyan-500/40 shadow-2xl overflow-hidden flex flex-col max-h-[92vh] sm:max-h-[88vh]">
         
         {/* Header */}
-        <div className="p-4 sm:p-5 border-b border-slate-800 bg-slate-900/70 flex items-center justify-between">
-          <div className="flex items-center space-x-2.5 sm:space-x-3">
+        <div className="p-3.5 sm:p-5 border-b border-slate-800 bg-slate-900/70 flex items-center justify-between">
+          <div className="flex items-center space-x-2.5 sm:space-x-3 min-w-0">
             <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-cyan-950 border border-cyan-500/40 flex items-center justify-center text-cyan-400 shrink-0">
               <Upload className="w-5 h-5" />
             </div>
-            <div>
+            <div className="min-w-0">
               <div className="flex items-center gap-2 flex-wrap">
                 <span className="text-[10px] sm:text-xs font-semibold px-2 py-0.5 rounded bg-cyan-500/10 text-cyan-400 border border-cyan-500/30">
                   4-STEP GUIDED INGESTION WIZARD
@@ -537,7 +600,7 @@ Binary Header Preview: ${Array.from(new Uint8Array(buffer.slice(0, 32))).map(b =
                   BSA 2023 Sec 63 Chain-of-Custody
                 </span>
               </div>
-              <h2 id="wizard-modal-title" className="text-sm sm:text-base md:text-lg font-bold text-slate-100 font-heading">
+              <h2 id="wizard-modal-title" className="text-sm sm:text-base md:text-lg font-bold text-slate-100 font-heading truncate">
                 Digital Evidence Ingestion & Blockchain Anchoring
               </h2>
             </div>
@@ -546,15 +609,15 @@ Binary Header Preview: ${Array.from(new Uint8Array(buffer.slice(0, 32))).map(b =
           <button
             onClick={onClose}
             aria-label="Close upload wizard"
-            className="p-1.5 sm:p-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-slate-100 transition-colors"
+            className="p-1.5 sm:p-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-slate-100 transition-colors shrink-0 ml-2"
           >
             <X className="w-5 h-5" />
           </button>
         </div>
 
-        {/* Step Indicator Progress Bar */}
-        <div className="px-4 py-3 bg-slate-950/80 border-b border-slate-800/80">
-          <div className="grid grid-cols-4 gap-2 text-xs">
+        {/* Step Indicator Progress Bar - Mobile Responsive */}
+        <div className="px-3 sm:px-4 py-2.5 sm:py-3 bg-slate-950/80 border-b border-slate-800/80">
+          <div className="grid grid-cols-4 gap-1.5 sm:gap-2 text-xs">
             {[
               { num: 1, title: 'Select File', desc: 'Drag-and-drop & validation' },
               { num: 2, title: 'Metadata', desc: 'Classification & OCR' },
@@ -566,7 +629,7 @@ Binary Header Preview: ${Array.from(new Uint8Array(buffer.slice(0, 32))).map(b =
               return (
                 <div 
                   key={stepItem.num} 
-                  className={`flex items-center space-x-2 p-1.5 rounded-lg transition-all ${
+                  className={`flex items-center space-x-1.5 sm:space-x-2 p-1 sm:p-1.5 rounded-lg transition-all ${
                     isCurrent 
                       ? 'bg-cyan-950/50 border border-cyan-500/40 text-cyan-300' 
                       : isPast 
@@ -587,7 +650,7 @@ Binary Header Preview: ${Array.from(new Uint8Array(buffer.slice(0, 32))).map(b =
                     <div className="font-semibold text-[11px] truncate leading-tight">{stepItem.title}</div>
                     <div className="text-[9px] text-slate-400 truncate font-mono">{stepItem.desc}</div>
                   </div>
-                  <div className="md:hidden font-semibold text-[11px] truncate">
+                  <div className="md:hidden font-semibold text-[10px] sm:text-[11px] truncate">
                     {stepItem.title}
                   </div>
                 </div>
@@ -597,7 +660,7 @@ Binary Header Preview: ${Array.from(new Uint8Array(buffer.slice(0, 32))).map(b =
         </div>
 
         {/* Wizard Step Content Body */}
-        <div className="p-4 sm:p-6 overflow-y-auto flex-1 text-xs">
+        <div className="p-3.5 sm:p-6 overflow-y-auto flex-1 text-xs">
 
           {/* ============================================================== */}
           {/* STEP 1: FILE SELECTION & PRE-VALIDATION */}
@@ -609,7 +672,7 @@ Binary Header Preview: ${Array.from(new Uint8Array(buffer.slice(0, 32))).map(b =
               <div className="space-y-1.5">
                 <label className="text-[11px] font-semibold text-slate-400 flex items-center gap-1.5">
                   <Sparkles className="w-3.5 h-3.5 text-amber-400" />
-                  Quick-Load Verified Case Evidence Exhibits:
+                  <span>Quick-Load Verified Case Evidence Exhibits:</span>
                 </label>
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
                   {EVIDENCE_PRESETS.map((preset, idx) => (
@@ -643,13 +706,22 @@ Binary Header Preview: ${Array.from(new Uint8Array(buffer.slice(0, 32))).map(b =
                 onDragLeave={handleDragLeave}
                 onDrop={handleDrop}
                 onClick={() => fileInputRef.current?.click()}
-                className={`relative border-2 border-dashed rounded-2xl p-6 sm:p-8 text-center cursor-pointer transition-all ${
+                className={`relative border-2 border-dashed rounded-2xl p-5 sm:p-8 text-center cursor-pointer transition-all ${
                   isDragOver 
                     ? 'border-cyan-400 bg-cyan-950/30 scale-[1.01]' 
                     : fileName 
                       ? 'border-emerald-500/60 bg-emerald-950/10' 
                       : 'border-slate-700 hover:border-cyan-500/60 bg-slate-950/40 hover:bg-slate-900/30'
                 }`}
+                tabIndex={0}
+                role="button"
+                aria-label="Upload evidence file drag and drop zone"
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    fileInputRef.current?.click();
+                  }
+                }}
               >
                 <input
                   ref={fileInputRef}
@@ -668,7 +740,7 @@ Binary Header Preview: ${Array.from(new Uint8Array(buffer.slice(0, 32))).map(b =
 
                   {fileName ? (
                     <div>
-                      <div className="text-sm font-bold text-slate-100 font-mono">{fileName}</div>
+                      <div className="text-sm font-bold text-slate-100 font-mono break-all">{fileName}</div>
                       <div className="text-xs text-emerald-400 font-medium mt-0.5">
                         File selected ({(fileSizeBytes / 1024).toFixed(1)} KB)
                       </div>
@@ -759,18 +831,18 @@ Binary Header Preview: ${Array.from(new Uint8Array(buffer.slice(0, 32))).map(b =
               
               {/* Attributed Officer Card */}
               <div className="p-3 rounded-xl bg-slate-950 border border-slate-800 flex items-center justify-between">
-                <div className="flex items-center space-x-2.5 text-slate-300">
+                <div className="flex items-center space-x-2.5 text-slate-300 min-w-0">
                   <Shield className="w-4 h-4 text-cyan-400 shrink-0" />
-                  <div>
-                    <div className="font-semibold text-slate-100">
+                  <div className="min-w-0">
+                    <div className="font-semibold text-slate-100 truncate">
                       Attributed Officer: {roleInfo.name} ({roleInfo.badge})
                     </div>
-                    <div className="text-[10px] text-slate-400 font-mono">
+                    <div className="text-[10px] text-slate-400 font-mono truncate">
                       Location: {gpsCoordinates}
                     </div>
                   </div>
                 </div>
-                <span className="text-[10px] font-mono text-cyan-400 px-2 py-0.5 rounded bg-cyan-950/60 border border-cyan-500/30">
+                <span className="text-[10px] font-mono text-cyan-400 px-2 py-0.5 rounded bg-cyan-950/60 border border-cyan-500/30 shrink-0 ml-2">
                   {roleInfo.label}
                 </span>
               </div>
@@ -864,7 +936,7 @@ Binary Header Preview: ${Array.from(new Uint8Array(buffer.slice(0, 32))).map(b =
                   <div className="flex items-center justify-between text-cyan-300 font-semibold text-[11px]">
                     <div className="flex items-center gap-1.5">
                       <Bot className="w-3.5 h-3.5" />
-                      AI Named Entity Extraction (BNSS / BSA 2023):
+                      <span>AI Named Entity Extraction (BNSS / BSA 2023):</span>
                     </div>
                     <button
                       type="button"
@@ -927,17 +999,41 @@ Binary Header Preview: ${Array.from(new Uint8Array(buffer.slice(0, 32))).map(b =
           {currentStep === 3 && (
             <div className="space-y-4">
               
-              <div className="p-3 rounded-xl bg-slate-950 border border-slate-800 flex items-center justify-between">
+              {/* Header Box */}
+              <div className="p-3 rounded-xl bg-slate-950 border border-slate-800 flex items-center justify-between flex-wrap gap-2">
                 <div>
-                  <div className="font-bold text-slate-100 text-xs">
-                    Executing Cryptographic Ingestion Pipeline
+                  <div className="font-bold text-slate-100 text-xs flex items-center gap-1.5">
+                    <Database className="w-3.5 h-3.5 text-cyan-400" />
+                    <span>Executing Cryptographic Ingestion Pipeline</span>
                   </div>
                   <div className="text-[10px] text-slate-400 font-mono">
                     Target Exhibit: {title} (Stage {stage})
                   </div>
                 </div>
                 <div className="text-[10px] font-mono px-2 py-0.5 rounded bg-cyan-950 text-cyan-400 border border-cyan-500/30">
-                  {isExecutingPipeline ? 'PIPELINE ACTIVE' : overallError ? 'PIPELINE HALTED' : 'STANDBY'}
+                  {isExecutingPipeline ? 'PIPELINE ACTIVE' : overallError ? 'PIPELINE HALTED' : 'COMPLETE'}
+                </div>
+              </div>
+
+              {/* Progressive Progress Bar */}
+              <div className="p-3 rounded-xl bg-slate-950/80 border border-slate-800 space-y-1.5">
+                <div className="flex items-center justify-between text-[11px] font-mono">
+                  <span className="text-slate-400 font-semibold">Pipeline Progress</span>
+                  <span className={`font-bold ${overallError ? 'text-red-400' : 'text-cyan-400'}`}>
+                    {uploadProgress}%
+                  </span>
+                </div>
+                <div className="w-full h-2 rounded-full bg-slate-800 overflow-hidden">
+                  <div 
+                    className={`h-full transition-all duration-300 ease-out rounded-full ${
+                      overallError 
+                        ? 'bg-red-500' 
+                        : uploadProgress === 100 
+                          ? 'bg-emerald-500' 
+                          : 'bg-gradient-to-r from-cyan-500 to-indigo-500'
+                    }`}
+                    style={{ width: `${uploadProgress}%` }}
+                  />
                 </div>
               </div>
 
@@ -1034,7 +1130,7 @@ Binary Header Preview: ${Array.from(new Uint8Array(buffer.slice(0, 32))).map(b =
                   <p className="text-[11px] text-red-300">
                     {overallError} Duplicate entries have been prevented by the idempotency protocol.
                   </p>
-                  <div className="pt-1 flex items-center gap-2">
+                  <div className="pt-1 flex items-center gap-2 flex-wrap">
                     <button
                       type="button"
                       onClick={handleSafeRetry}
@@ -1138,11 +1234,22 @@ Binary Header Preview: ${Array.from(new Uint8Array(buffer.slice(0, 32))).map(b =
                   </div>
                 </div>
 
-                {/* Merkle Root */}
+                {/* Merkle Root with Copy */}
                 {confirmedMerkleRoot && (
                   <div className="pt-2 border-t border-slate-800/80">
-                    <div className="text-[10px] font-mono text-slate-400 mb-1">
-                      Case Merkle Root DAG Anchor:
+                    <div className="flex items-center justify-between text-[10px] font-mono text-slate-400 mb-1">
+                      <span className="flex items-center gap-1">
+                        <Layers className="w-3 h-3 text-emerald-400" />
+                        <span>Case Merkle Root DAG Anchor:</span>
+                      </span>
+                      <button
+                        type="button"
+                        onClick={handleCopyRoot}
+                        className="text-emerald-400 hover:text-emerald-300 flex items-center gap-1 font-mono"
+                      >
+                        {copiedRoot ? <Check className="w-3 h-3 text-emerald-400" /> : <Copy className="w-3 h-3" />}
+                        <span>{copiedRoot ? 'Copied' : 'Copy Root'}</span>
+                      </button>
                     </div>
                     <div className="font-mono text-[10px] text-emerald-400 bg-slate-900 px-3 py-2 rounded-lg border border-slate-800 break-all select-all">
                       {confirmedMerkleRoot}
@@ -1156,15 +1263,15 @@ Binary Header Preview: ${Array.from(new Uint8Array(buffer.slice(0, 32))).map(b =
 
         </div>
 
-        {/* Wizard Footer Controls */}
-        <div className="p-4 sm:p-5 border-t border-slate-800 bg-slate-900/60 flex items-center justify-between text-xs">
+        {/* Wizard Footer Controls - Mobile Responsive */}
+        <div className="p-3.5 sm:p-5 border-t border-slate-800 bg-slate-900/60 flex flex-col-reverse sm:flex-row items-stretch sm:items-center justify-between gap-2.5 text-xs">
           
           {/* Left Action: Back or Cancel */}
           {currentStep === 1 && (
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 font-semibold transition"
+              className="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 font-semibold transition text-center"
             >
               Cancel
             </button>
@@ -1174,7 +1281,7 @@ Binary Header Preview: ${Array.from(new Uint8Array(buffer.slice(0, 32))).map(b =
             <button
               type="button"
               onClick={() => setCurrentStep(1)}
-              className="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 font-semibold flex items-center space-x-1.5 transition"
+              className="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 font-semibold flex items-center justify-center space-x-1.5 transition"
             >
               <ArrowLeft className="w-3.5 h-3.5" />
               <span>Back: File Validation</span>
@@ -1182,7 +1289,7 @@ Binary Header Preview: ${Array.from(new Uint8Array(buffer.slice(0, 32))).map(b =
           )}
 
           {currentStep === 3 && (
-            <div className="text-slate-400 font-mono text-[10px]">
+            <div className="text-slate-400 font-mono text-[10px] text-center sm:text-left">
               {isExecutingPipeline ? 'Processing in progress...' : 'Idempotent execution'}
             </div>
           )}
@@ -1191,7 +1298,7 @@ Binary Header Preview: ${Array.from(new Uint8Array(buffer.slice(0, 32))).map(b =
             <button
               type="button"
               onClick={handleResetForAnother}
-              className="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 font-semibold flex items-center space-x-1.5 transition"
+              className="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 font-semibold flex items-center justify-center space-x-1.5 transition"
             >
               <Upload className="w-3.5 h-3.5" />
               <span>Ingest Another Exhibit</span>
@@ -1199,14 +1306,14 @@ Binary Header Preview: ${Array.from(new Uint8Array(buffer.slice(0, 32))).map(b =
           )}
 
           {/* Right Action: Next / Submit */}
-          <div className="flex items-center space-x-2">
+          <div className="flex items-center space-x-2 justify-end">
             
             {currentStep === 1 && (
               <button
                 type="button"
                 disabled={!fileName || validationErrors.length > 0 || isCalculatingHash}
                 onClick={() => setCurrentStep(2)}
-                className="px-4 py-2 rounded-xl bg-cyan-600 hover:bg-cyan-500 text-slate-950 font-bold flex items-center space-x-1.5 shadow-lg shadow-cyan-600/30 transition-all disabled:opacity-40 disabled:cursor-not-allowed"
+                className="w-full sm:w-auto px-4 py-2 rounded-xl bg-cyan-600 hover:bg-cyan-500 text-slate-950 font-bold flex items-center justify-center space-x-1.5 shadow-lg shadow-cyan-600/30 transition-all disabled:opacity-40 disabled:cursor-not-allowed"
               >
                 <span>Next: Metadata Entry</span>
                 <ArrowRight className="w-3.5 h-3.5 stroke-[2.5]" />
@@ -1221,7 +1328,7 @@ Binary Header Preview: ${Array.from(new Uint8Array(buffer.slice(0, 32))).map(b =
                   setCurrentStep(3);
                   executeIngestionPipeline();
                 }}
-                className="px-4 py-2 rounded-xl bg-cyan-600 hover:bg-cyan-500 text-slate-950 font-bold flex items-center space-x-1.5 shadow-lg shadow-cyan-600/30 transition-all disabled:opacity-40 disabled:cursor-not-allowed"
+                className="w-full sm:w-auto px-4 py-2 rounded-xl bg-cyan-600 hover:bg-cyan-500 text-slate-950 font-bold flex items-center justify-center space-x-1.5 shadow-lg shadow-cyan-600/30 transition-all disabled:opacity-40 disabled:cursor-not-allowed"
               >
                 <Fingerprint className="w-3.5 h-3.5" />
                 <span>Execute Ingestion & Anchor</span>
@@ -1233,7 +1340,7 @@ Binary Header Preview: ${Array.from(new Uint8Array(buffer.slice(0, 32))).map(b =
               <button
                 type="button"
                 onClick={handleSafeRetry}
-                className="px-4 py-2 rounded-xl bg-red-600 hover:bg-red-500 text-white font-bold flex items-center space-x-1.5 shadow-lg shadow-red-600/30 transition-all"
+                className="w-full sm:w-auto px-4 py-2 rounded-xl bg-red-600 hover:bg-red-500 text-white font-bold flex items-center justify-center space-x-1.5 shadow-lg shadow-red-600/30 transition-all"
               >
                 <RefreshCw className="w-3.5 h-3.5" />
                 <span>Retry Pipeline</span>
@@ -1241,7 +1348,7 @@ Binary Header Preview: ${Array.from(new Uint8Array(buffer.slice(0, 32))).map(b =
             )}
 
             {currentStep === 4 && (
-              <div className="flex items-center space-x-2">
+              <div className="flex items-center space-x-2 w-full sm:w-auto justify-end">
                 {onSelectDocument && uploadedDocument && (
                   <button
                     type="button"
@@ -1249,7 +1356,7 @@ Binary Header Preview: ${Array.from(new Uint8Array(buffer.slice(0, 32))).map(b =
                       onSelectDocument(uploadedDocument);
                       onClose();
                     }}
-                    className="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-cyan-300 font-bold flex items-center space-x-1.5 transition"
+                    className="px-3.5 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-cyan-300 font-bold flex items-center space-x-1.5 transition"
                   >
                     <Eye className="w-3.5 h-3.5" />
                     <span>Inspect Exhibit</span>
@@ -1261,7 +1368,7 @@ Binary Header Preview: ${Array.from(new Uint8Array(buffer.slice(0, 32))).map(b =
                   className="px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-slate-950 font-bold flex items-center space-x-1.5 shadow-lg shadow-emerald-600/30 transition"
                 >
                   <Check className="w-3.5 h-3.5 stroke-[3]" />
-                  <span>Done & Return to Center</span>
+                  <span>Done & Return</span>
                 </button>
               </div>
             )}
@@ -1274,3 +1381,5 @@ Binary Header Preview: ${Array.from(new Uint8Array(buffer.slice(0, 32))).map(b =
     </div>
   );
 };
+
+export default UploadModal;

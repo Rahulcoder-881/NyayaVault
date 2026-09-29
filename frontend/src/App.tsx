@@ -518,11 +518,16 @@ export const App: React.FC = () => {
 
   const handleUploadDocument = async (data: any) => {
     if (isLiveBackend) {
-      const res = await fetch(`${API_BASE}/api/documents/upload`, {
+      const response = await fetch(`${API_BASE}/api/documents/upload`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(data)
-      }).then(r => r.json());
+      });
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.detail || `Server returned HTTP ${response.status} during ingestion.`);
+      }
+      const res = await response.json();
       await fetchAllData();
       return res;
     }
@@ -580,7 +585,11 @@ export const App: React.FC = () => {
       total_documents: prev.total_documents + 1
     } : null);
 
-    return { status: 'SUCCESS', document: newDoc };
+    return { 
+      status: 'SUCCESS', 
+      document: newDoc, 
+      merkle_root: caseRecord?.merkle_root || '94e2a17cb6e95d51829033d59e99a89d70fa8d88e62f01f80ec45511b8b69324' 
+    };
   };
 
   const hasTamperAlert = (caseRecord?.quarantine_count || 0) > 0;

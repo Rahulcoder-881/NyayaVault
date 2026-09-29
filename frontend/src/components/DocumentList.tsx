@@ -28,6 +28,7 @@ interface DocumentListProps {
   currentRole: UserRole;
   activeStage: LifecycleStageId | null;
   onSelectDocument: (doc: DocumentItem) => void;
+  onVerifyDocument?: (doc: DocumentItem) => void;
   onSimulateTamper: (doc: DocumentItem) => void;
   onRestoreDoc: (doc: DocumentItem) => void;
   onViewMerkleProof: (doc: DocumentItem) => void;
@@ -61,6 +62,7 @@ export const DocumentList: React.FC<DocumentListProps> = ({
   currentRole,
   activeStage,
   onSelectDocument,
+  onVerifyDocument,
   onSimulateTamper,
   onRestoreDoc,
   onViewMerkleProof,
@@ -810,6 +812,25 @@ export const DocumentList: React.FC<DocumentListProps> = ({
                       <span className="hidden sm:inline">Tamper</span>
                     </button>
                   )}
+
+                  {/* Evidence Verification Action */}
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      if (onVerifyDocument) {
+                        onVerifyDocument(doc);
+                      } else {
+                        onSelectDocument(doc);
+                      }
+                    }}
+                    className="flex items-center space-x-1.5 px-3 py-1.5 rounded-lg bg-emerald-950/80 hover:bg-emerald-900/80 text-emerald-300 border border-emerald-500/40 text-xs font-medium transition-all focus:outline-none focus:ring-1 focus:ring-emerald-400"
+                    title="Audit and verify evidence integrity"
+                    aria-label={`Verify evidence integrity for ${doc.title}`}
+                  >
+                    <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
+                    <span>Verify</span>
+                  </button>
 
                   {/* View Details / Watermark */}
                   <button

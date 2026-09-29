@@ -78,6 +78,7 @@ export const App: React.FC = () => {
 
   // Modal states
   const [selectedDoc, setSelectedDoc] = useState<DocumentItem | null>(null);
+  const [viewerInitialTab, setViewerInitialTab] = useState<'PREVIEW' | 'VERIFICATION' | 'TECHNICAL'>('PREVIEW');
   const [merkleProofDoc, setMerkleProofDoc] = useState<DocumentItem | null>(null);
   const [isTamperModalOpen, setIsTamperModalOpen] = useState(false);
   const [tamperTargetDoc, setTamperTargetDoc] = useState<DocumentItem | null>(null);
@@ -92,6 +93,16 @@ export const App: React.FC = () => {
   const [isGrantAccessModalOpen, setIsGrantAccessModalOpen] = useState(false);
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const [isCaseVerifyModalOpen, setIsCaseVerifyModalOpen] = useState(false);
+
+  const handleInspectEvidence = (doc: DocumentItem) => {
+    setViewerInitialTab('PREVIEW');
+    setSelectedDoc(doc);
+  };
+
+  const handleVerifyEvidence = (doc: DocumentItem) => {
+    setViewerInitialTab('VERIFICATION');
+    setSelectedDoc(doc);
+  };
 
   // WebSocket connection state
   const [isWsConnected, setIsWsConnected] = useState(true);
@@ -994,7 +1005,8 @@ export const App: React.FC = () => {
                   documents={documents}
                   currentRole={currentRole}
                   activeStage={activeStage}
-                  onSelectDocument={(doc) => setSelectedDoc(doc)}
+                  onSelectDocument={handleInspectEvidence}
+                  onVerifyDocument={handleVerifyEvidence}
                   onSimulateTamper={(doc) => {
                     setTamperTargetDoc(doc);
                     setIsTamperModalOpen(true);
@@ -1227,7 +1239,8 @@ export const App: React.FC = () => {
                 documents={documents}
                 currentRole={currentRole}
                 activeStage={activeStage}
-                onSelectDocument={(doc) => setSelectedDoc(doc)}
+                onSelectDocument={handleInspectEvidence}
+                onVerifyDocument={handleVerifyEvidence}
                 onSimulateTamper={(doc) => {
                   setTamperTargetDoc(doc);
                   setIsTamperModalOpen(true);
@@ -1581,6 +1594,8 @@ export const App: React.FC = () => {
           setIsTamperModalOpen(true);
         }}
         onRestoreDoc={handleRestoreDoc}
+        isLiveBackend={isLiveBackend}
+        initialTab={viewerInitialTab}
       />
 
       {/* 2. Tamper Attack Simulator Modal */}

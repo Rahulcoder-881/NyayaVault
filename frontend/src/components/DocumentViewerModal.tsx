@@ -1,13 +1,13 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import type { DocumentItem, UserRole } from '../types';
 import { USER_ROLES } from '../constants';
+import { EvidenceVerificationPanel } from './EvidenceVerificationPanel';
 import { 
   X, 
   ShieldCheck, 
   ShieldAlert, 
   Printer, 
   Cpu, 
-  MapPin, 
   FileText, 
   AlertTriangle, 
   RotateCcw,
@@ -21,6 +21,8 @@ interface DocumentViewerModalProps {
   onClose: () => void;
   onSimulateTamper: (doc: DocumentItem) => void;
   onRestoreDoc: (doc: DocumentItem) => void;
+  isLiveBackend?: boolean;
+  initialTab?: 'PREVIEW' | 'VERIFICATION' | 'TECHNICAL';
 }
 
 export const DocumentViewerModal: React.FC<DocumentViewerModalProps> = ({
@@ -28,9 +30,17 @@ export const DocumentViewerModal: React.FC<DocumentViewerModalProps> = ({
   currentRole,
   onClose,
   onSimulateTamper,
-  onRestoreDoc
+  onRestoreDoc,
+  isLiveBackend = false,
+  initialTab = 'PREVIEW'
 }) => {
-  const [activeTab, setActiveTab] = useState<'PREVIEW' | 'VERIFICATION' | 'TECHNICAL'>('PREVIEW');
+  const [activeTab, setActiveTab] = useState<'PREVIEW' | 'VERIFICATION' | 'TECHNICAL'>(initialTab);
+
+  useEffect(() => {
+    if (initialTab) {
+      setActiveTab(initialTab);
+    }
+  }, [initialTab, document?.id]);
 
   if (!document) return null;
   const roleInfo = USER_ROLES[currentRole];
@@ -203,63 +213,15 @@ export const DocumentViewerModal: React.FC<DocumentViewerModalProps> = ({
             </div>
           )}
 
-          {/* TAB 2: Cryptographic Telemetry */}
+          {/* TAB 2: Dedicated Evidence Verification Panel */}
           {activeTab === 'VERIFICATION' && (
-            <div className="space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs">
-                
-                <div className="p-3.5 rounded-xl bg-slate-900/80 border border-slate-800 space-y-1">
-                  <div className="text-slate-400 font-sans text-[11px]">Cryptographic SHA-256 Digest</div>
-                  <div className="font-mono text-cyan-400 font-bold break-all">{document.sha256_hash}</div>
-                </div>
-
-                <div className="p-3.5 rounded-xl bg-slate-900/80 border border-slate-800 space-y-1">
-                  <div className="text-slate-400 font-sans text-[11px]">Original Anchored SHA-256 (Genesis)</div>
-                  <div className="font-mono text-slate-200 break-all">{document.original_sha256}</div>
-                </div>
-
-                <div className="p-3.5 rounded-xl bg-slate-900/80 border border-slate-800 space-y-1">
-                  <div className="text-slate-400 font-sans text-[11px]">Merkle Tree Leaf Hash</div>
-                  <div className="font-mono text-indigo-300 break-all">{document.merkle_leaf_hash}</div>
-                </div>
-
-                <div className="p-3.5 rounded-xl bg-slate-900/80 border border-slate-800 space-y-1">
-                  <div className="text-slate-400 font-sans text-[11px]">AES-256-GCM Envelope IV & HSM ARN</div>
-                  <div className="font-mono text-slate-300 text-[11px] truncate">{document.kms_key_arn}</div>
-                  <div className="font-mono text-cyan-400 text-[10px]">IV: {document.envelope_iv}</div>
-                </div>
-
-                <div className="p-3.5 rounded-xl bg-slate-900/80 border border-slate-800 space-y-1">
-                  <div className="text-slate-400 font-sans text-[11px]">GPS Geospatial Origin</div>
-                  <div className="font-mono text-emerald-400 flex items-center space-x-1">
-                    <MapPin className="w-3.5 h-3.5" />
-                    <span>{document.gps_coordinates}</span>
-                  </div>
-                </div>
-
-                <div className="p-3.5 rounded-xl bg-slate-900/80 border border-slate-800 space-y-1">
-                  <div className="text-slate-400 font-sans text-[11px]">ISO 27001 Security Classification</div>
-                  <div className="font-mono text-amber-300 font-bold">{document.classification}</div>
-                </div>
-
-              </div>
-
-              {/* Tamper Diagnostics if Corrupted */}
-              {document.tamper_details && (
-                <div className="p-4 rounded-xl bg-red-950/60 border border-red-500/60 space-y-2">
-                  <div className="text-xs font-bold text-red-400 uppercase tracking-wider flex items-center space-x-1.5">
-                    <AlertTriangle className="w-4 h-4" />
-                    <span>Forensic Tamper Incident Telemetry</span>
-                  </div>
-                  <div className="text-xs font-mono text-slate-300 space-y-1">
-                    <div>Attack Type: <span className="text-red-300">{document.tamper_details.attack_type}</span></div>
-                    <div>Corrupted Byte Offset: <span className="text-red-300">Offset {document.tamper_details.corrupted_offset}</span></div>
-                    <div>Quarantine Rule: <span className="text-red-300">{document.tamper_details.quarantine_rule}</span></div>
-                    <div>Incident Logged At: <span className="text-slate-400">{document.tamper_details.timestamp_utc}</span></div>
-                  </div>
-                </div>
-              )}
-            </div>
+            <EvidenceVerificationPanel
+              document={document}
+              currentRole={currentRole}
+              isLiveBackend={isLiveBackend}
+              onSimulateTamper={onSimulateTamper}
+              onRestoreDoc={onRestoreDoc}
+            />
           )}
 
           {/* TAB 3: Forensic Provenance Watermark Details */}

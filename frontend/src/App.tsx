@@ -11,21 +11,25 @@ import type {
 } from './types';
 import { USER_ROLES } from './constants';
 import { Navbar } from './components/Navbar';
-import { Vault3DVisualizer } from './components/Vault3DVisualizer';
 import { LifecyclePipeline } from './components/LifecyclePipeline';
 import { DocumentList } from './components/DocumentList';
-import { DocumentViewerModal } from './components/DocumentViewerModal';
-import { TamperAttackModal } from './components/TamperAttackModal';
-import { BSACertificateModal } from './components/BSACertificateModal';
-import { MerkleTreeModal } from './components/MerkleTreeModal';
-import { AILegalAssistant } from './components/AILegalAssistant';
 import { LiveAuditLedger } from './components/LiveAuditLedger';
-import { UploadModal } from './components/UploadModal';
-import { DocsViewerModal } from './components/DocsViewerModal';
-import { BlockchainLedgerModal } from './components/BlockchainLedgerModal';
-import { GrantAccessModal } from './components/GrantAccessModal';
-import { OfficerAuthModal } from './components/OfficerAuthModal';
-import { CaseVerificationModal } from './components/CaseVerificationModal';
+
+// Lazy-loaded heavy components & modals for optimal bundle splitting
+const Vault3DVisualizer = React.lazy(() => import('./components/Vault3DVisualizer').then(m => ({ default: m.Vault3DVisualizer })));
+const DocumentViewerModal = React.lazy(() => import('./components/DocumentViewerModal').then(m => ({ default: m.DocumentViewerModal })));
+const TamperAttackModal = React.lazy(() => import('./components/TamperAttackModal').then(m => ({ default: m.TamperAttackModal })));
+const BSACertificateModal = React.lazy(() => import('./components/BSACertificateModal').then(m => ({ default: m.BSACertificateModal })));
+const MerkleTreeModal = React.lazy(() => import('./components/MerkleTreeModal').then(m => ({ default: m.MerkleTreeModal })));
+const AILegalAssistant = React.lazy(() => import('./components/AILegalAssistant').then(m => ({ default: m.AILegalAssistant })));
+const UploadModal = React.lazy(() => import('./components/UploadModal').then(m => ({ default: m.UploadModal })));
+const DocsViewerModal = React.lazy(() => import('./components/DocsViewerModal').then(m => ({ default: m.DocsViewerModal })));
+const BlockchainLedgerModal = React.lazy(() => import('./components/BlockchainLedgerModal').then(m => ({ default: m.BlockchainLedgerModal })));
+const GrantAccessModal = React.lazy(() => import('./components/GrantAccessModal').then(m => ({ default: m.GrantAccessModal })));
+const OfficerAuthModal = React.lazy(() => import('./components/OfficerAuthModal').then(m => ({ default: m.OfficerAuthModal })));
+const CaseVerificationModal = React.lazy(() => import('./components/CaseVerificationModal').then(m => ({ default: m.CaseVerificationModal })));
+const EvidenceVerificationModal = React.lazy(() => import('./components/EvidenceVerificationModal').then(m => ({ default: m.EvidenceVerificationModal })));
+const PresentationTourModal = React.lazy(() => import('./components/PresentationTourModal').then(m => ({ default: m.PresentationTourModal })));
 import { 
   INITIAL_CASE,
   INITIAL_DOCUMENTS,
@@ -93,6 +97,9 @@ export const App: React.FC = () => {
   const [isGrantAccessModalOpen, setIsGrantAccessModalOpen] = useState(false);
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const [isCaseVerifyModalOpen, setIsCaseVerifyModalOpen] = useState(false);
+  const [isEvidenceVerifyModalOpen, setIsEvidenceVerifyModalOpen] = useState(false);
+  const [evidenceVerifyDoc, setEvidenceVerifyDoc] = useState<DocumentItem | null>(null);
+  const [isPresentationTourOpen, setIsPresentationTourOpen] = useState(false);
 
   const handleInspectEvidence = (doc: DocumentItem) => {
     setViewerInitialTab('PREVIEW');
@@ -100,19 +107,19 @@ export const App: React.FC = () => {
   };
 
   const handleVerifyEvidence = (doc: DocumentItem) => {
-    setViewerInitialTab('VERIFICATION');
-    setSelectedDoc(doc);
+    setEvidenceVerifyDoc(doc);
+    setIsEvidenceVerifyModalOpen(true);
   };
 
   // WebSocket connection state
   const [isWsConnected, setIsWsConnected] = useState(true);
   const wsRef = useRef<WebSocket | null>(null);
 
-  // Base API URL
-  const API_BASE = window.location.origin.includes('5173') ? 'http://127.0.0.1:8000' : '';
+  // Base API URL (uses relative path under HTTPS so Vite proxies cleanly without mixed content)
+  const API_BASE = window.location.protocol === 'https:' ? '' : (window.location.origin.includes('5173') ? 'http://127.0.0.1:8000' : '');
 
   // 1. Initial Data Fetching with Resilient Standalone Web Preview Fallback
-  const fetchAllData = async () => {
+  const fetchAllData = React.useCallback(async () => {
     // If not running on local development port with FastAPI backend,
     // operate immediately in high-fidelity standalone Web Preview mode
     const isLocalDev = window.location.origin.includes('5173') || 
@@ -120,8 +127,6 @@ export const App: React.FC = () => {
                         window.location.origin.includes('127.0.0.1');
 
     if (!isLocalDev) {
-      setIsLiveBackend(false);
-      setIsWsConnected(true);
       return;
     }
 
@@ -155,11 +160,20 @@ export const App: React.FC = () => {
 
     setIsLiveBackend(false);
     setIsWsConnected(true);
-  };
+  }, [API_BASE]);
 
   useEffect(() => {
-    fetchAllData();
-  }, []);
+    let isCancelled = false;
+    const timer = setTimeout(() => {
+      if (!isCancelled) {
+        fetchAllData();
+      }
+    }, 0);
+    return () => {
+      isCancelled = true;
+      clearTimeout(timer);
+    };
+  }, [fetchAllData]);
 
   // 2. WebSocket Listener for Live Ledger Updates (or Web Preview Simulation)
   useEffect(() => {
@@ -168,23 +182,27 @@ export const App: React.FC = () => {
       const interval = setInterval(() => {
         const actions = ['PERIODIC_INTEGRITY_CHECK', 'ZERO_TRUST_HEARTBEAT', 'FIPS_180_AUDIT'];
         const act = actions[Math.floor(Math.random() * actions.length)];
-        const newBlock: AuditBlock = {
-          block_id: `BLK-${Date.now().toString().slice(-4)}`,
-          index: (auditBlocks.length || 12) + 1,
-          timestamp_utc: new Date().toISOString(),
-          action: act,
-          case_id: 'CASE-2026-DEL-402',
-          actor_name: 'Consensus Daemon',
-          actor_role: 'AUTOMATED_NODE',
-          badge_id: 'SYS-CONSENSUS-DAEMON',
-          ip_address: '127.0.0.1 (Web Preview Bus)',
-          previous_block_hash: auditBlocks[0]?.block_hash || '7f83b1657ff1fc53b92dc18148a1d65dfc2d4b1fa3d677284addd200126d9069',
-          block_hash: Math.random().toString(16).substring(2).padEnd(64, '0'),
-          merkle_root: caseRecord?.merkle_root || '94e2a17cb6e95d51829033d59e99a89d70fa8d88e62f01f80ec45511b8b69324',
-          signature: 'HMAC_SHA256_PERIODIC_CONSENSUS_VERIFIED',
-          details: 'Automated background audit pass verified all active evidence leaves against Merkle root.'
-        };
-        setAuditBlocks(prev => [newBlock, ...prev.slice(0, 30)]);
+        setAuditBlocks(prev => {
+          const prevHash = prev[0]?.block_hash || '7f83b1657ff1fc53b92dc18148a1d65dfc2d4b1fa3d677284addd200126d9069';
+          const newIndex = (prev.length || 12) + 1;
+          const newBlock: AuditBlock = {
+            block_id: `BLK-${Date.now().toString().slice(-4)}`,
+            index: newIndex,
+            timestamp_utc: new Date().toISOString(),
+            action: act,
+            case_id: 'CASE-2026-DEL-402',
+            actor_name: 'Consensus Daemon',
+            actor_role: 'AUTOMATED_NODE',
+            badge_id: 'SYS-CONSENSUS-DAEMON',
+            ip_address: '127.0.0.1 (Web Preview Bus)',
+            previous_block_hash: prevHash,
+            block_hash: Math.random().toString(16).substring(2).padEnd(64, '0'),
+            merkle_root: '94e2a17cb6e95d51829033d59e99a89d70fa8d88e62f01f80ec45511b8b69324',
+            signature: 'HMAC_SHA256_PERIODIC_CONSENSUS_VERIFIED',
+            details: 'Automated background audit pass verified all active evidence leaves against Merkle root.'
+          };
+          return [newBlock, ...prev.slice(0, 30)];
+        });
       }, 16000);
       return () => clearInterval(interval);
     }
@@ -573,6 +591,11 @@ export const App: React.FC = () => {
         onOpenBlockchainModal={() => setIsBlockchainModalOpen(true)}
         onOpenGrantAccessModal={() => setIsGrantAccessModalOpen(true)}
         onOpenAuthModal={() => setIsAuthModalOpen(true)}
+        onOpenEvidenceVerifyModal={() => {
+          setEvidenceVerifyDoc(selectedDoc || documents[0] || null);
+          setIsEvidenceVerifyModalOpen(true);
+        }}
+        onOpenPresentationTour={() => setIsPresentationTourOpen(true)}
       />
 
       {/* Critical Security Alert Ribbon if Tampered */}
@@ -1554,13 +1577,19 @@ export const App: React.FC = () => {
                     <span>Return to Eco-Mode</span>
                   </button>
                 </div>
-                <Vault3DVisualizer
-                  integrityScore={caseRecord?.integrity_score || 100}
-                  isTampered={hasTamperAlert}
-                  activeStage={activeStage}
-                  onSelectStage={(stage) => setActiveStage(stage)}
-                  merkleRoot={caseRecord?.merkle_root || ''}
-                />
+                <React.Suspense fallback={
+                  <div className="w-full h-80 flex items-center justify-center bg-slate-950/80 rounded-2xl border border-slate-800 text-xs font-mono text-cyan-400 animate-pulse">
+                    Loading 3D Hardware Accelerated Vault Engine...
+                  </div>
+                }>
+                  <Vault3DVisualizer
+                    integrityScore={caseRecord?.integrity_score || 100}
+                    isTampered={hasTamperAlert}
+                    activeStage={activeStage}
+                    onSelectStage={(stage) => setActiveStage(stage)}
+                    merkleRoot={caseRecord?.merkle_root || ''}
+                  />
+                </React.Suspense>
               </div>
             )}
           </div>
@@ -1582,113 +1611,181 @@ export const App: React.FC = () => {
         </div>
       </footer>
 
-      {/* MODALS */}
-      {/* 1. Document Viewer Modal */}
-      <DocumentViewerModal
-        document={selectedDoc}
-        currentRole={currentRole}
-        onClose={() => setSelectedDoc(null)}
-        onSimulateTamper={(doc) => {
-          setSelectedDoc(null);
-          setTamperTargetDoc(doc);
-          setIsTamperModalOpen(true);
-        }}
-        onRestoreDoc={handleRestoreDoc}
-        isLiveBackend={isLiveBackend}
-        initialTab={viewerInitialTab}
-      />
+      {/* MODALS WITH CODE-SPLITTING VIA REACT.LAZY & SUSPENSE */}
+      <React.Suspense fallback={null}>
+        {/* 1. Document Viewer Modal */}
+        {selectedDoc && (
+          <DocumentViewerModal
+            document={selectedDoc}
+            currentRole={currentRole}
+            onClose={() => setSelectedDoc(null)}
+            onSimulateTamper={(doc) => {
+              setSelectedDoc(null);
+              setTamperTargetDoc(doc);
+              setIsTamperModalOpen(true);
+            }}
+            onRestoreDoc={handleRestoreDoc}
+            isLiveBackend={isLiveBackend}
+            initialTab={viewerInitialTab}
+          />
+        )}
 
-      {/* 2. Tamper Attack Simulator Modal */}
-      <TamperAttackModal
-        documents={documents}
-        selectedDoc={tamperTargetDoc}
-        isOpen={isTamperModalOpen}
-        onClose={() => {
-          setIsTamperModalOpen(false);
-          setTamperTargetDoc(null);
-        }}
-        onExecuteTamper={handleSimulateTamper}
-        onRestoreDoc={handleRestoreDoc}
-      />
+        {/* 2. Tamper Attack Simulator Modal */}
+        {isTamperModalOpen && (
+          <TamperAttackModal
+            documents={documents}
+            selectedDoc={tamperTargetDoc}
+            isOpen={isTamperModalOpen}
+            onClose={() => {
+              setIsTamperModalOpen(false);
+              setTamperTargetDoc(null);
+            }}
+            onExecuteTamper={handleSimulateTamper}
+            onRestoreDoc={handleRestoreDoc}
+          />
+        )}
 
-      {/* 3. Section 63 BSA Certificate Modal */}
-      <BSACertificateModal
-        isOpen={isCertModalOpen}
-        onClose={() => setIsCertModalOpen(false)}
-        caseRecord={caseRecord}
-        certificateData={certData}
-        onGenerate={handleGenerateBSACert}
-      />
+        {/* 3. Section 63 BSA Certificate Modal */}
+        {isCertModalOpen && (
+          <BSACertificateModal
+            isOpen={isCertModalOpen}
+            onClose={() => setIsCertModalOpen(false)}
+            caseRecord={caseRecord}
+            certificateData={certData}
+            onGenerate={handleGenerateBSACert}
+          />
+        )}
 
-      {/* 4. Merkle Tree Proof Modal */}
-      <MerkleTreeModal
-        document={merkleProofDoc}
-        isOpen={merkleProofDoc !== null}
-        onClose={() => setMerkleProofDoc(null)}
-        onFetchProof={handleFetchMerkleProof}
-      />
+        {/* 4. Merkle Tree Proof Modal */}
+        {merkleProofDoc !== null && (
+          <MerkleTreeModal
+            document={merkleProofDoc}
+            isOpen={merkleProofDoc !== null}
+            onClose={() => setMerkleProofDoc(null)}
+            onFetchProof={handleFetchMerkleProof}
+          />
+        )}
 
-      {/* 5. AI Legal Assistant Modal */}
-      <AILegalAssistant
-        isOpen={isAIModalOpen}
-        onClose={() => setIsAIModalOpen(false)}
-        contradictions={contradictions}
-        timeline={timeline}
-        onSelectDocById={(docId) => {
-          setIsAIModalOpen(false);
-          const found = documents.find(d => d.id === docId);
-          if (found) setSelectedDoc(found);
-        }}
-        onQueryAI={handleQueryAI}
-      />
+        {/* 5. AI Legal Assistant Modal */}
+        {isAIModalOpen && (
+          <AILegalAssistant
+            isOpen={isAIModalOpen}
+            onClose={() => setIsAIModalOpen(false)}
+            contradictions={contradictions}
+            timeline={timeline}
+            onSelectDocById={(docId) => {
+              setIsAIModalOpen(false);
+              const found = documents.find(d => d.id === docId);
+              if (found) setSelectedDoc(found);
+            }}
+            onQueryAI={handleQueryAI}
+          />
+        )}
 
-      {/* 6. Document Ingestion Modal */}
-      <UploadModal
-        isOpen={isUploadModalOpen}
-        onClose={() => setIsUploadModalOpen(false)}
-        currentRole={currentRole}
-        onUpload={handleUploadDocument}
-        onSelectDocument={setSelectedDoc}
-      />
+        {/* 6. Document Ingestion Modal */}
+        {isUploadModalOpen && (
+          <UploadModal
+            isOpen={isUploadModalOpen}
+            onClose={() => setIsUploadModalOpen(false)}
+            currentRole={currentRole}
+            onUpload={handleUploadDocument}
+            onSelectDocument={setSelectedDoc}
+          />
+        )}
 
-      {/* 7. System Architecture & Specification Suite (8 Chapters) */}
-      <DocsViewerModal
-        isOpen={isDocsModalOpen}
-        onClose={() => setIsDocsModalOpen(false)}
-      />
+        {/* 7. System Architecture & Specification Suite (8 Chapters) */}
+        {isDocsModalOpen && (
+          <DocsViewerModal
+            isOpen={isDocsModalOpen}
+            onClose={() => setIsDocsModalOpen(false)}
+          />
+        )}
 
-      {/* 8. Blockchain Ledger & Smart Contract Explorer */}
-      <BlockchainLedgerModal
-        isOpen={isBlockchainModalOpen}
-        onClose={() => setIsBlockchainModalOpen(false)}
-        documents={documents}
-      />
+        {/* 8. Blockchain Ledger & Smart Contract Explorer */}
+        {isBlockchainModalOpen && (
+          <BlockchainLedgerModal
+            isOpen={isBlockchainModalOpen}
+            onClose={() => setIsBlockchainModalOpen(false)}
+            documents={documents}
+          />
+        )}
 
-      {/* 9. Timed Evidence Access Delegation (Rule 8.2) */}
-      <GrantAccessModal
-        isOpen={isGrantAccessModalOpen}
-        onClose={() => setIsGrantAccessModalOpen(false)}
-        currentRole={currentRole}
-        currentCaseId={caseRecord?.case_id || 'CASE-2026-DEL-402'}
-      />
+        {/* 9. Timed Evidence Access Delegation (Rule 8.2) */}
+        {isGrantAccessModalOpen && (
+          <GrantAccessModal
+            isOpen={isGrantAccessModalOpen}
+            onClose={() => setIsGrantAccessModalOpen(false)}
+            currentRole={currentRole}
+            currentCaseId={caseRecord?.case_id || 'CASE-2026-DEL-402'}
+          />
+        )}
 
-      {/* 10. Officer Multi-Factor Authentication & RBAC Switcher */}
-      <OfficerAuthModal
-        isOpen={isAuthModalOpen}
-        onClose={() => setIsAuthModalOpen(false)}
-        currentRole={currentRole}
-        onSelectRole={(newRole) => setCurrentRole(newRole)}
-      />
+        {/* 10. Officer Multi-Factor Authentication & RBAC Switcher */}
+        {isAuthModalOpen && (
+          <OfficerAuthModal
+            isOpen={isAuthModalOpen}
+            onClose={() => setIsAuthModalOpen(false)}
+            currentRole={currentRole}
+            onSelectRole={(newRole) => setCurrentRole(newRole)}
+          />
+        )}
 
-      {/* 11. Case Verification Consensus Audit Modal */}
-      <CaseVerificationModal
-        isOpen={isCaseVerifyModalOpen}
-        onClose={() => setIsCaseVerifyModalOpen(false)}
-        caseRecord={caseRecord}
-        documents={documents}
-        onRestoreAll={handleRestoreAll}
-        isLiveBackend={isLiveBackend}
-      />
+        {/* 11. Case Verification Consensus Audit Modal */}
+        {isCaseVerifyModalOpen && (
+          <CaseVerificationModal
+            isOpen={isCaseVerifyModalOpen}
+            onClose={() => setIsCaseVerifyModalOpen(false)}
+            caseRecord={caseRecord}
+            documents={documents}
+            onRestoreAll={handleRestoreAll}
+            isLiveBackend={isLiveBackend}
+          />
+        )}
+
+        {/* 12. Dedicated Evidence Verification Suite Modal */}
+        {isEvidenceVerifyModalOpen && (
+          <EvidenceVerificationModal
+            isOpen={isEvidenceVerifyModalOpen}
+            onClose={() => setIsEvidenceVerifyModalOpen(false)}
+            document={evidenceVerifyDoc || selectedDoc || documents[0] || null}
+            documents={documents}
+            currentRole={currentRole}
+            isLiveBackend={isLiveBackend}
+            onSelectDocument={(doc) => setEvidenceVerifyDoc(doc)}
+            onSimulateTamper={(doc) => {
+              setIsEvidenceVerifyModalOpen(false);
+              setTamperTargetDoc(doc);
+              setIsTamperModalOpen(true);
+            }}
+            onRestoreDoc={handleRestoreDoc}
+          />
+        )}
+
+        {/* 13. Presentation Tour / SIH Pitch Deck Modal */}
+        {isPresentationTourOpen && (
+          <PresentationTourModal
+            isOpen={isPresentationTourOpen}
+            onClose={() => setIsPresentationTourOpen(false)}
+            onSimulateTamper={() => {
+              setIsPresentationTourOpen(false);
+              setTamperTargetDoc(documents[2] || documents[0]);
+              setIsTamperModalOpen(true);
+            }}
+            onOpenCertModal={() => {
+              setIsPresentationTourOpen(false);
+              setIsCertModalOpen(true);
+            }}
+            onOpenMerkleModal={() => {
+              setIsPresentationTourOpen(false);
+              setMerkleProofDoc(documents[0] || null);
+            }}
+            onOpenAIModal={() => {
+              setIsPresentationTourOpen(false);
+              setIsAIModalOpen(true);
+            }}
+          />
+        )}
+      </React.Suspense>
 
     </div>
   );

@@ -224,7 +224,7 @@ export const Vault3DVisualizer: React.FC<Vault3DVisualizerProps> = ({
       renderer.dispose();
       container.innerHTML = '';
     };
-  }, [isTampered]);
+  }, [isTampered, activeStage]);
 
   return (
     <div className={`relative overflow-hidden rounded-2xl border transition-all duration-500 ${

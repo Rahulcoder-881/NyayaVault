@@ -77,8 +77,8 @@ export const EvidenceVerificationPanel: React.FC<EvidenceVerificationPanelProps>
   const roleInfo = USER_ROLES[currentRole] || USER_ROLES.IO_POLICE;
   const isDocTampered = document.tamper_flag || document.status === 'TAMPERED' || document.status === 'QUARANTINED';
 
-  // Base API URL
-  const API_BASE = window.location.origin.includes('5173') ? 'http://127.0.0.1:8000' : '';
+  // Base API URL (uses relative path under HTTPS so Vite proxies cleanly without mixed content)
+  const API_BASE = window.location.protocol === 'https:' ? '' : (window.location.origin.includes('5173') ? 'http://127.0.0.1:8000' : '');
 
   // Execute verification suite against backend & statutory RBAC logic
   const runVerificationSuite = useCallback(async () => {
@@ -406,7 +406,16 @@ export const EvidenceVerificationPanel: React.FC<EvidenceVerificationPanelProps>
   }, [document, currentRole, isLiveBackend, isDocTampered, roleInfo, API_BASE]);
 
   useEffect(() => {
-    runVerificationSuite();
+    let isCancelled = false;
+    const timer = setTimeout(() => {
+      if (!isCancelled) {
+        runVerificationSuite();
+      }
+    }, 0);
+    return () => {
+      isCancelled = true;
+      clearTimeout(timer);
+    };
   }, [runVerificationSuite]);
 
   // Aggregate stats
@@ -790,7 +799,7 @@ export const EvidenceVerificationPanel: React.FC<EvidenceVerificationPanelProps>
             <span>Forensic Verification Report & Custody Synthesis</span>
           </div>
           <span className="text-[10px] font-mono text-slate-400">
-            Report ID: VR-{document.id}-{Date.now().toString().slice(-6)}
+            Report ID: VR-{document.id}-{document.sha256_hash.slice(0, 6).toUpperCase()}
           </span>
         </div>
 

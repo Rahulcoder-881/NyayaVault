@@ -13,7 +13,9 @@ import {
   UserCheck,
   KeyRound,
   Leaf,
-  Wrench
+  Wrench,
+  ShieldCheck,
+  Award
 } from 'lucide-react';
 
 interface NavbarProps {
@@ -31,6 +33,8 @@ interface NavbarProps {
   onOpenBlockchainModal: () => void;
   onOpenGrantAccessModal: () => void;
   onOpenAuthModal: () => void;
+  onOpenEvidenceVerifyModal?: () => void;
+  onOpenPresentationTour?: () => void;
 }
 
 export const Navbar: React.FC<NavbarProps> = ({
@@ -47,7 +51,9 @@ export const Navbar: React.FC<NavbarProps> = ({
   onOpenDocsModal,
   onOpenBlockchainModal,
   onOpenGrantAccessModal,
-  onOpenAuthModal
+  onOpenAuthModal,
+  onOpenEvidenceVerifyModal,
+  onOpenPresentationTour
 }) => {
   const activeRoleInfo = USER_ROLES[currentRole];
   const isCompromised = quarantineCount > 0 || integrityScore < 100;
@@ -123,6 +129,19 @@ export const Navbar: React.FC<NavbarProps> = ({
             <span className="sm:hidden">Cert</span>
           </button>
 
+          {/* Evaluator Highlight: SIH 2026 Pitch Deck Tour */}
+          {onOpenPresentationTour && (
+            <button
+              onClick={onOpenPresentationTour}
+              className="flex items-center space-x-1.5 px-3 py-1.5 rounded-xl bg-gradient-to-r from-indigo-600 via-purple-600 to-cyan-600 hover:opacity-95 text-white text-xs font-bold shadow-md shadow-indigo-600/30 transition-all border border-indigo-400/40"
+              title="Launch interactive SIH 2026 pitch deck and live evaluator demo tour"
+            >
+              <Award className="w-3.5 h-3.5 text-amber-300" />
+              <span className="hidden sm:inline">SIH Pitch Deck</span>
+              <span className="sm:hidden">Pitch</span>
+            </button>
+          )}
+
           {/* Consolidated Tools & Governance Dropdown */}
           <div className="relative">
             <button
@@ -147,6 +166,19 @@ export const Navbar: React.FC<NavbarProps> = ({
                   </div>
 
                   <div className="space-y-1 mt-1">
+                    {onOpenEvidenceVerifyModal && (
+                      <button
+                        onClick={() => { setIsToolsOpen(false); onOpenEvidenceVerifyModal(); }}
+                        className="w-full text-left p-2 rounded-xl hover:bg-slate-800/70 text-slate-200 text-xs flex items-center gap-2.5 transition border border-cyan-500/20 bg-cyan-950/20"
+                      >
+                        <ShieldCheck className="w-4 h-4 text-cyan-400 shrink-0" />
+                        <div>
+                          <div className="font-semibold text-white">Evidence Verification Suite</div>
+                          <div className="text-[10px] text-cyan-300">5-Check Cryptographic & Custody Audit</div>
+                        </div>
+                      </button>
+                    )}
+
                     <button
                       onClick={() => { setIsToolsOpen(false); onOpenDocsModal(); }}
                       className="w-full text-left p-2 rounded-xl hover:bg-slate-800/70 text-slate-200 text-xs flex items-center gap-2.5 transition"

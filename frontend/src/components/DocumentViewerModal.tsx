@@ -38,7 +38,8 @@ export const DocumentViewerModal: React.FC<DocumentViewerModalProps> = ({
 
   useEffect(() => {
     if (initialTab) {
-      setActiveTab(initialTab);
+      const timer = setTimeout(() => setActiveTab(initialTab), 0);
+      return () => clearTimeout(timer);
     }
   }, [initialTab, document?.id]);
 

@@ -28,7 +28,9 @@ export const MerkleTreeModal: React.FC<MerkleTreeModalProps> = ({
   useEffect(() => {
     if (!isOpen || !document) return;
     let mounted = true;
-    setIsLoading(true);
+    const timer = setTimeout(() => {
+      if (mounted) setIsLoading(true);
+    }, 0);
     onFetchProof(document.id)
       .then((data) => {
         if (mounted) {
@@ -42,6 +44,7 @@ export const MerkleTreeModal: React.FC<MerkleTreeModalProps> = ({
       });
     return () => {
       mounted = false;
+      clearTimeout(timer);
     };
   }, [document, isOpen, onFetchProof]);
 

@@ -700,7 +700,6 @@ def auth_login_v1(req: AuthLoginRequest):
         }
     }
 
-@app.post("/api/documents/upload")
 @app.post("/api/v1/documents/upload")
 async def upload_document_v1(req: DocumentUploadRequest):
     """
